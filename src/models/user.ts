@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import { Schema } from "mongoose";
-import { Role } from "./rol";
+import { Role } from "./role";
+import { Card } from "./card";
+import { Desk } from "./desk";
 
 const countries = [
   "Argentina",
@@ -65,6 +67,8 @@ const userSchema = new Schema({
     required: true,
     default: "anonymous",
   },
+  cards: [{ type: Schema.Types.ObjectId, ref: Card }],
+  desks: [{ type: Schema.Types.ObjectId, ref: Desk }],
 });
 
 export const User = mongoose.model("User", userSchema, "users");

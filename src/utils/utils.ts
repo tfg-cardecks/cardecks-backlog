@@ -1,8 +1,9 @@
 import { red, cyan, green } from "colorette";
 
 //local imports
-import { Role } from "../models/rol";
+import { Role } from "../models/role";
 import { User } from "../models/user";
+import { Desk } from "../models/desk";
 
 export const roles = [
   { name: "admin" },
@@ -24,6 +25,7 @@ async function createModels() {
     createRoles();
     console.log(green("Creating models..."));
     await User.createCollection();
+    await Desk.createCollection();
     console.log(cyan("User model created"));
   } catch (error: any) {
     console.log(red(`Can't create models: ${error.message}`));

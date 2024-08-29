@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import bycrypt from "bcrypt";
 import {
-    checkPassword,
+  checkPassword,
   handleValidateEmail,
   handleValidateLocation,
   handleValidatePassword,
@@ -48,11 +48,9 @@ export const signin = async (req: Request, res: Response) => {
   if (!userFound) return res.status(404).json({ message: "User not found" });
   if (await checkPassword(req.body.password, res, userFound)) return;
 
-
-
-const token = jwt.sign(
-    { id: userFound._id, role: userFound.role, username: userFound.username},
-    "secretkey",
+  const token = jwt.sign(
+    { id: userFound._id, role: userFound.role, username: userFound.username },
+    "secretKey",
     {
       expiresIn: 86400, // 24 hours
       algorithm: "HS512",
