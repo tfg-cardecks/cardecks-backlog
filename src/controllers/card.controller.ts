@@ -3,6 +3,8 @@ import { Request, Response } from "express";
 //local imports
 import { Card } from "../models/card";
 import { handleValidationErrors } from "../validators/validate";
+import { User } from "../models/user";
+import { CustomRequest } from "../interfaces/customRequest";
 
 export const getCards = async (_req: Request, res: Response) => {
   try {
@@ -23,10 +25,22 @@ export const getCardById = async (req: Request, res: Response) => {
   }
 };
 
-export const createCard = async (req: Request, res: Response) => {
+export const createCard = async (req: CustomRequest, res: Response) => {
   try {
-    const card = new Card(req.body);
+    const userId = req.user?.id;
+    const cardData = req.body;
+    if (!userId)
+      return res.status(401).json({ message: "User not authenticated" });
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const card = new Card(cardData);
     await card.save();
+
+    user.cards.push(card._id);
+    await user.save();
+
     return res.status(201).json(card);
   } catch (error: any) {
     handleValidationErrors(error, res);

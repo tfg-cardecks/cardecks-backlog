@@ -2,9 +2,11 @@ import { Request, Response } from "express";
 
 //local imports
 import { Desk } from "../models/desk";
+import { User } from "../models/user";
 import { handleValidationErrors } from "../validators/validate";
+import { CustomRequest } from "../interfaces/customRequest";
 
-export const getDesks = async (req: Request, res: Response) => {
+export const getDesks = async (_req: Request, res: Response) => {
   try {
     const desks = await Desk.find();
     return res.status(200).json(desks);
@@ -23,10 +25,23 @@ export const getDeskById = async (req: Request, res: Response) => {
   }
 };
 
-export const createDesk = async (req: Request, res: Response) => {
+export const createDesk = async (req: CustomRequest, res: Response) => {
   try {
-    const desk = new Desk(req.body);
+    const userId = req.user?.id; 
+    const deskData = req.body;
+
+    if (!userId)
+      return res.status(401).json({ message: "User not authenticated" });
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const desk = new Desk(deskData);
     await desk.save();
+
+    user.desks.push(desk._id);
+    await user.save();
+
     return res.status(201).json(desk);
   } catch (error: any) {
     handleValidationErrors(error, res);

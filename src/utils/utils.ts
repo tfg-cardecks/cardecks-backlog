@@ -4,11 +4,13 @@ import { red, cyan, green } from "colorette";
 import { Role } from "../models/role";
 import { User } from "../models/user";
 import { Desk } from "../models/desk";
+import { Game } from "../models/game";
 
 export const roles = [
   { name: "admin" },
   { name: "anonymous" },
   { name: "authenticated" },
+  { name: "customer" },
 ];
 
 async function createRoles() {
@@ -26,6 +28,7 @@ async function createModels() {
     console.log(green("Creating models..."));
     await User.createCollection();
     await Desk.createCollection();
+    await Game.createCollection();
     console.log(cyan("User model created"));
   } catch (error: any) {
     console.log(red(`Can't create models: ${error.message}`));

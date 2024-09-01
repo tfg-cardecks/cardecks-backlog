@@ -67,6 +67,11 @@ const userSchema = new Schema({
     required: true,
     default: "anonymous",
   },
+  gamesCompletedByType: {
+    type: Map,
+    of: Number,
+    default: {},
+  },
   cards: [{ type: Schema.Types.ObjectId, ref: Card }],
   desks: [{ type: Schema.Types.ObjectId, ref: Desk }],
 });
