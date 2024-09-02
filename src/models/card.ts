@@ -39,6 +39,8 @@ const cardSchema = new Schema({
     images: [
       {
         url: { type: String, required: false },
+        dataFile: { type: Buffer, required: false }, 
+        contentType: { type: String, required: false },
         left: { type: Number, required: false },
         top: { type: Number, required: false },
         width: { type: Number },
@@ -70,6 +72,8 @@ const cardSchema = new Schema({
     images: [
       {
         url: { type: String, required: false },
+        dataFile: { type: Buffer, required: false }, 
+        contentType: { type: String, required: false },
         left: { type: Number, required: false },
         top: { type: Number, required: false },
         width: { type: Number },
