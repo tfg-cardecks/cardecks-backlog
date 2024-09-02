@@ -23,7 +23,7 @@ export const checkUserRol = async (
         .json({ message: "You must login to use this feature" });
     }
     req.user = user;
-    //5)
+
     next();
   } catch (error: any) {
     return res.status(403).json({ error: "Invalid token" });

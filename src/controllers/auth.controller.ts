@@ -29,7 +29,7 @@ export const signup = async (req: Request, res: Response) => {
   if (handleValidatePassword(password, res)) return;
   try {
     if (role === "admin") {
-      //pasarela de pago video 2024-07-12 16-50-30 minuto 28
+      //pasarela de pago
     } else {
       await registerUser(req, res);
     }
