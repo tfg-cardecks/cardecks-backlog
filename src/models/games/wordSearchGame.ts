@@ -42,7 +42,7 @@ const wordSearchGameSchema = new Schema({
 });
 
 export const WordSearchGame = mongoose.model(
-  "wordSearchGame",
+  "WordSearchGame",
   wordSearchGameSchema,
   "wordSearchGames"
 );

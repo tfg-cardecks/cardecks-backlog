@@ -28,11 +28,11 @@ export const signup = async (req: Request, res: Response) => {
   if (handleValidateLocation(location, res)) return;
   if (handleValidatePassword(password, res)) return;
   try {
-    if (role === "admin") {
-      //pasarela de pago
-    } else {
-      await registerUser(req, res);
-    }
+    //if (role === "admin") {
+    //pasarela de pago
+    //} else {
+    await registerUser(req, res);
+    //}
   } catch (error: any) {
     handleValidationErrors(error, res);
   }

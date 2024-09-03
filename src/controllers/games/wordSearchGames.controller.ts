@@ -44,6 +44,9 @@ export const createWordSearchGame = async (
     if (!theme || !wordLists[theme])
       return res.status(400).json({ message: "Invalid theme" });
 
+    if (!userId)
+      return res.status(401).json({ message: "User not authenticated" });
+
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -82,6 +85,9 @@ export const createWordSearchGame = async (
 
     await game.save();
 
+    user.games.push(game._id);
+    await user.save();
+
     const words = wordLists[theme];
 
     const shuffledWords = words.sort(() => 0.5 - Math.random());
@@ -99,7 +105,7 @@ export const createWordSearchGame = async (
       completed: false,
     });
     await newWordSearchGame.save();
-
+    
     return res
       .status(201)
       .json({ gameId: game._id, wordSearchGameId: newWordSearchGame._id });
