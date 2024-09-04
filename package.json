@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "npx tsc",
-    "start": "node src/index.js",
+    "start": "node src/index.ts",
     "dev": "set NODE_ENV=development && nodemon src/index.ts"
   },
   "keywords": [],
