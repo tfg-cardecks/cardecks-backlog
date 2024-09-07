@@ -56,5 +56,7 @@ export const signin = async (req: Request, res: Response) => {
       algorithm: "HS512",
     }
   );
-  return res.json({ token });
+  return res
+    .status(200)
+    .json({ token: token, role: userFound.role, username: userFound.username, id: userFound._id });
 };

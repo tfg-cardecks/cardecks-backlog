@@ -1,7 +1,6 @@
 import { Router } from "express";
 
 //local imports
-import { checkAdmin } from "../middlewares/checkAdmin";
 import {
   deleteUser,
   getUserById,
@@ -10,8 +9,8 @@ import {
 
 const router = Router();
 
-router.get("/users", checkAdmin, getUsers);
-router.get("/user/:id", checkAdmin, getUserById);
-router.delete("/user/:id", checkAdmin, deleteUser);
+router.get("/users", getUsers);
+router.get("/user/:id", getUserById);
+router.delete("/user/:id", deleteUser);
 
 export default router;
