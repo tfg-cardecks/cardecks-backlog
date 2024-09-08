@@ -9,6 +9,7 @@ import {
   handleValidateRole,
   handleValidateUniqueUser,
   handleValidationErrors,
+  handleValidateTypeOfUser,
 } from "../validators/validate";
 import { User } from "../models/user";
 import { getUserByEmailOrUsername } from "../utils/utils";
@@ -21,12 +22,13 @@ async function registerUser(req: Request, res: Response) {
 }
 
 export const signup = async (req: Request, res: Response) => {
-  const { email, username, password, location, role } = req.body;
+  const { email, username, password, location, typeOfUser, role } = req.body;
   if (handleValidateRole(role, res)) return;
   if (await handleValidateUniqueUser({ email, username }, res)) return;
   if (handleValidateEmail(email, res)) return;
   if (handleValidateLocation(location, res)) return;
   if (handleValidatePassword(password, res)) return;
+  if (handleValidateTypeOfUser(typeOfUser, res)) return;
   try {
     //if (role === "admin") {
     //pasarela de pago
@@ -58,5 +60,10 @@ export const signin = async (req: Request, res: Response) => {
   );
   return res
     .status(200)
-    .json({ token: token, role: userFound.role, username: userFound.username, id: userFound._id });
+    .json({
+      token: token,
+      role: userFound.role,
+      username: userFound.username,
+      id: userFound._id,
+    });
 };

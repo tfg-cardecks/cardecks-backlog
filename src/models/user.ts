@@ -24,6 +24,12 @@ const countries = [
   "United States",
 ];
 
+const typesOfUser = [
+  "Student",
+  "Teacher",
+  "Other",
+];
+
 const userSchema = new Schema({
   createAt: { type: Date, default: Date.now() },
   name: {
@@ -60,6 +66,12 @@ const userSchema = new Schema({
     type: String,
     required: [true, "Location is required"],
     enum: countries,
+    trim: true,
+  },
+  typeOfUser: {
+    type: String,
+    required: false,
+    enum: typesOfUser,
     trim: true,
   },
   role: {

@@ -72,6 +72,20 @@ export function handleValidationErrors(error: any, res: Response) {
   });
 }
 
+export const handleValidateTypeOfUser = (typeOfUser: string, res: Response): boolean => {
+  const typesOfUser = [
+    "Student",
+    "Teacher",
+    "Other",
+  ];
+  
+  if (!typesOfUser.includes(typeOfUser)) {
+    res.status(400).json({ message: `Invalid typeOfUser: ${typeOfUser}` });
+    return true;
+  }
+  return false;
+};
+
 export async function checkPassword(
   password: string,
   res: Response,
