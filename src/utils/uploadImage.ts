@@ -25,16 +25,16 @@ export const uploadCardImage = async (req: Request, res: Response) => {
   };
 
   if (!img && !url)
-    return res.status(400).json({ message: "Image or URL is required" });
+    return res.status(400).json({ message: "Imagen o URL es requerida" });
 
   if (!side || !["frontSide", "backSide"].includes(side)) {
     return res
       .status(400)
-      .json({ message: "Invalid or missing side parameter" });
+      .json({ message: "Parámetro de lado inválido o faltante" });
   }
   try {
     const card = await Card.findById(id);
-    if (!card) return res.status(404).json({ message: "Card not found" });
+    if (!card) return res.status(404).json({ message: "Carta no encontrada" });
 
     const imageEntry: any = {
       left: left ? Number(left) : undefined,
@@ -55,7 +55,7 @@ export const uploadCardImage = async (req: Request, res: Response) => {
     await card.save();
     return res
       .status(200)
-      .json({ message: "Image uploaded successfully", img });
+      .json({ message: "Imagen subida con éxito", img });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
   }
@@ -68,7 +68,7 @@ export const errorHandlingFiles = (
   next: NextFunction
 ) => {
   if (err instanceof multer.MulterError) {
-    return res.status(400).json({ message: "Unexpected field in the request" });
+    return res.status(400).json({ message: "Campo inesperado en la solicitud" });
   }
   next();
 };

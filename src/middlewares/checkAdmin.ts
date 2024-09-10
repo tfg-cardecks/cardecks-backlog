@@ -6,15 +6,15 @@ export const checkAdmin = (req: Request, res: Response, next: NextFunction) => {
   const token = req.headers.authorization;
 
   if (!token) {
-    return res.status(401).json({ message: "No token provided" });
+    return res.status(401).json({ message: "No se proporcionó token" });
   }
   try {
     const user = jwt.verify(token, "secretKey") as jwt.JwtPayload;
     if (user.role !== "admin") {
-      return res.status(403).json({ message: "You are not an admin" });
+      return res.status(403).json({ message: "No eres administrador" });
     }
     next();
   } catch (error: any) {
-    return res.status(403).json({ error: "Invalid token" });
+    return res.status(403).json({ error: "Token inválido" });
   }
 };

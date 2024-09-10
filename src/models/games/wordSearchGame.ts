@@ -5,20 +5,20 @@ const wordSearchGameSchema = new Schema({
   game: {
     type: Schema.Types.ObjectId,
     ref: "Game",
-    required: [true, "Game is required"],
+    required: [true, "El juego es obligatorio"],
   },
   user: {
     type: Schema.Types.ObjectId,
     ref: "User",
-    required: [true, "User is required"],
+    required: [true, "El usuario es obligatorio"],
   },
   grid: {
     type: [[String]],
-    required: [true, "Grid is required"],
+    required: [true, "La cuadrícula es obligatoria"],
   },
   words: {
     type: [String],
-    required: [true, "Words are required"],
+    required: [true, "Las palabras son obligatorias"],
   },
   status: {
     type: String,
@@ -36,7 +36,7 @@ const wordSearchGameSchema = new Schema({
   theme: {
     type: String,
     enum: ["Animals", "Colors"],
-    required: [true, "Theme is required"],
+    required: [true, "El tema es obligatorio"],
   },
   completed: { type: Boolean, default: false },
 });

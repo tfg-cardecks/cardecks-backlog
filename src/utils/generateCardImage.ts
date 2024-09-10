@@ -1,6 +1,7 @@
 import { createCanvas, loadImage } from 'canvas';
 import fs from 'fs';
 import path from 'path';
+import { validateCardData } from '../validators/validate';
 
 const createCardCanvas = (width: number, height: number) => {
   return createCanvas(width, height);
@@ -14,19 +15,6 @@ const drawText = (ctx: any, textArray: any[]) => {
   });
 };
 
-const drawShapes = (ctx: any, shapesArray: any[]) => {
-  shapesArray.forEach(shape => {
-    ctx.fillStyle = shape.fill || "#000000";
-    if (shape.shapeType === "rectangle") { 
-      ctx.fillRect(shape.left, shape.top, shape.width, shape.height);
-    } else if (shape.shapeType === "circle") { 
-      ctx.beginPath();
-      ctx.arc(shape.left + shape.radius, shape.top + shape.radius, shape.radius, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  });
-};
-
 const drawImages = async (ctx: any, imagesArray: any[]) => {
   for (const image of imagesArray) {
     if (image.url) {
@@ -36,30 +24,25 @@ const drawImages = async (ctx: any, imagesArray: any[]) => {
   }
 };
 
-const sortByZIndex = (elements: any[]) => {
-  return elements.sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
-};
-
-const drawCardSide = async (ctx: any, canvas: any, cardData: any, sideData: any) => {
+const drawCardSide = async (ctx: any, canvas: any, cardData: any, sideData: any, side: 'front' | 'back') => {
   clearCanvas(ctx, canvas);
 
-  drawCardTitleAndTheme(ctx, cardData);
+  if (side === 'front') {
+    drawCardTitleAndTheme(ctx, cardData);
+  } else {
+    // Fondo blanco para la parte trasera
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
 
-  const elements = [
-    ...sideData.text.map((t: any) => ({ ...t, type: 'text' })),
-    ...sideData.shapes.map((s: any) => ({ ...s, type: 'shape' })),
-    ...sideData.images.map((i: any) => ({ ...i, type: 'image' })),
-  ];
-  const sortedElements = sortByZIndex(elements);
-
-  for (const element of sortedElements) {
-    if (element.type === 'text') {
-      drawText(ctx, [element]);
-    } else if (element.type === 'shape') {
-      drawShapes(ctx, [element]);
-    } else if (element.type === 'image') {
-      await drawImages(ctx, [element]);
+  if (cardData.cardType === 'txtImg') {
+    if (side === 'front') {
+      drawText(ctx, sideData.text);
+    } else if (side === 'back') {
+      await drawImages(ctx, sideData.images);
     }
+  } else if (cardData.cardType === 'txtTxt') {
+    drawText(ctx, sideData.text);
   }
 };
 
@@ -85,19 +68,20 @@ const saveImageToFile = (canvas: any, imagePath: string) => {
 
 export const generateCardImage = async (cardData: any) => {
   try {
-    const cardWidth = cardData.cardWidth || 300;
-    const cardHeight = cardData.cardHeight || 500;
+    validateCardData(cardData);
+    const cardWidth = 300;
+    const cardHeight = 500;
 
     const canvas = createCardCanvas(cardWidth, cardHeight);
     const ctx = canvas.getContext("2d");
 
-    await drawCardSide(ctx, canvas, cardData, cardData.frontSide);
+    await drawCardSide(ctx, canvas, cardData, cardData.frontSide, 'front');
     const frontImagePath = path.join(__dirname, `../images/${cardData.title}_front.png`);
     saveImageToFile(canvas, frontImagePath);
 
     clearCanvas(ctx, canvas);
 
-    await drawCardSide(ctx, canvas, cardData, cardData.backSide);
+    await drawCardSide(ctx, canvas, cardData, cardData.backSide, 'back');
     const backImagePath = path.join(__dirname, `../images/${cardData.title}_back.png`);
     saveImageToFile(canvas, backImagePath);
 
@@ -106,6 +90,6 @@ export const generateCardImage = async (cardData: any) => {
       backImageUrl: `/images/${cardData.title}_back.png`,
     };
   } catch (error) {
-    throw new Error("Failed to generate card image");
+    throw new Error("Error al generar la imagen de la carta");
   }
 };

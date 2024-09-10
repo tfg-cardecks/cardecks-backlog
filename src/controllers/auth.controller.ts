@@ -4,12 +4,10 @@ import bycrypt from "bcrypt";
 import {
   checkPassword,
   handleValidateEmail,
-  handleValidateLocation,
   handleValidatePassword,
   handleValidateRole,
   handleValidateUniqueUser,
   handleValidationErrors,
-  handleValidateTypeOfUser,
 } from "../validators/validate";
 import { User } from "../models/user";
 import { getUserByEmailOrUsername } from "../utils/utils";
@@ -22,19 +20,17 @@ async function registerUser(req: Request, res: Response) {
 }
 
 export const signup = async (req: Request, res: Response) => {
-  const { email, username, password, location, typeOfUser, role } = req.body;
+  const { email, username, password, role } = req.body;
   if (handleValidateRole(role, res)) return;
   if (await handleValidateUniqueUser({ email, username }, res)) return;
   if (handleValidateEmail(email, res)) return;
-  if (handleValidateLocation(location, res)) return;
   if (handleValidatePassword(password, res)) return;
-  if (handleValidateTypeOfUser(typeOfUser, res)) return;
   try {
     //if (role === "admin") {
     //pasarela de pago
     //} else {
     await registerUser(req, res);
-    //}
+    // }
   } catch (error: any) {
     handleValidationErrors(error, res);
   }
@@ -46,8 +42,8 @@ export const signin = async (req: Request, res: Response) => {
     req.body.username
   );
   if (!req.body.password)
-    return res.status(400).json({ message: "Password is required" });
-  if (!userFound) return res.status(404).json({ message: "User not found" });
+    return res.status(400).json({ message: "La contraseña es obligatoria" });
+  if (!userFound) return res.status(404).json({ message: "Usuario no encontrado" });
   if (await checkPassword(req.body.password, res, userFound)) return;
 
   const token = jwt.sign(

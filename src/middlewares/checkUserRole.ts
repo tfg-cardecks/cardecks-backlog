@@ -12,7 +12,7 @@ export const checkUserRol = async (
   if (!token) {
     return res
       .status(401)
-      .json({ error: "You must login to use this feature" });
+      .json({ error: "Debes iniciar sesión para usar esta función" });
   }
   try {
     const user = jwt.verify(token, "secretKey") as jwt.JwtPayload;
@@ -20,12 +20,12 @@ export const checkUserRol = async (
     if (user.role === "anonymous") {
       return res
         .status(403)
-        .json({ message: "You must login to use this feature" });
+        .json({ message: "Debes iniciar sesión para usar esta función" });
     }
     req.user = user;
 
     next();
   } catch (error: any) {
-    return res.status(403).json({ error: "Invalid token" });
+    return res.status(403).json({ error: "Token inválido" });
   }
 };

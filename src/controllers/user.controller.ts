@@ -21,7 +21,7 @@ export const getUserById = async (req: Request, res: Response) => {
     const { id } = req.params;
     const user = await User.findById(id);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "Usuario no encontrado" });
     }
     return res.json(user);
   } catch (error: any) {
@@ -34,7 +34,7 @@ export const deleteUser = async (req: Request, res: Response) => {
     const { id } = req.params;
     const user = await User.findByIdAndDelete(id);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
     await Card.deleteMany({ _id: { $in: user.cards } });
@@ -43,7 +43,7 @@ export const deleteUser = async (req: Request, res: Response) => {
     await WordSearchGame.deleteMany({ user: id });
     await User.findByIdAndDelete(id);
 
-    return res.status(204).json({ message: "User deleted" });
+    return res.status(204).json({ message: "Usuario eliminado" });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
   }

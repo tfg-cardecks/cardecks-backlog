@@ -18,7 +18,7 @@ export const getDesks = async (_req: Request, res: Response) => {
 export const getDeskById = async (req: Request, res: Response) => {
   try {
     const desk = await Desk.findById(req.params.id);
-    if (!desk) return res.status(404).json({ message: "Desk not found" });
+    if (!desk) return res.status(404).json({ message: "Escritorio no encontrado" });
     return res.status(200).json(desk);
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
@@ -31,10 +31,10 @@ export const createDesk = async (req: CustomRequest, res: Response) => {
     const deskData = req.body;
 
     if (!userId)
-      return res.status(401).json({ message: "User not authenticated" });
+      return res.status(401).json({ message: "Usuario no autenticado" });
 
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
 
     const desk = new Desk(deskData);
     await desk.save();
@@ -53,7 +53,7 @@ export const updateDesk = async (req: Request, res: Response) => {
     const desk = await Desk.findByIdAndUpdate(req.params.id, req.body, {
       runValidators: true,
     });
-    if (!desk) return res.status(404).json({ message: "Desk not found" });
+    if (!desk) return res.status(404).json({ message: "Escritorio no encontrado" });
     return res.status(200).json(desk);
   } catch (error: any) {
     handleValidationErrors(error, res);
@@ -63,8 +63,8 @@ export const updateDesk = async (req: Request, res: Response) => {
 export const deleteDesk = async (req: Request, res: Response) => {
   try {
     const desk = await Desk.findByIdAndDelete(req.params.id);
-    if (!desk) return res.status(404).json({ message: "Desk not found" });
-    return res.status(204).json({ message: "Desk deleted successfully" });
+    if (!desk) return res.status(404).json({ message: "Escritorio no encontrado" });
+    return res.status(204).json({ message: "Escritorio eliminado con éxito" });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
   }

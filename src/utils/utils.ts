@@ -25,13 +25,13 @@ async function createRoles() {
 async function createModels() {
   try {
     createRoles();
-    console.log(green("Creating models..."));
+    console.log(green("Creando modelos..."));
     await User.createCollection();
     await Desk.createCollection();
     await Game.createCollection();
-    console.log(cyan("User model created"));
+    console.log(cyan("Modelo de usuario creado"));
   } catch (error: any) {
-    console.log(red(`Can't create models: ${error.message}`));
+    console.log(red(`No se pueden crear los modelos: ${error.message}`));
   }
 }
 
@@ -39,7 +39,7 @@ export async function createDatabase() {
   try {
     await createModels();
   } catch (error: any) {
-    console.log(red(`Can't create the database: ${error.message}`));
+    console.log(red(`No se puede crear la base de datos: ${error.message}`));
   }
 }
 

@@ -25,7 +25,7 @@ export const getWordSearchGameById = async (
   try {
     const wordSearchGame = await WordSearchGame.findById(req.params.id);
     if (!wordSearchGame) {
-      return res.status(404).json({ message: "WordSearchGame not found" });
+      return res.status(404).json({ message: "Sopa de letras no encontrada" });
     }
     return res.status(200).json(wordSearchGame);
   } catch (error: any) {
@@ -42,13 +42,13 @@ export const createWordSearchGame = async (
     const userId = req.user?.id;
 
     if (!theme || !wordLists[theme])
-      return res.status(400).json({ message: "Invalid theme" });
+      return res.status(400).json({ message: "Tema inválido" });
 
     if (!userId)
-      return res.status(401).json({ message: "User not authenticated" });
+      return res.status(401).json({ message: "Usuario no autenticado" });
 
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
 
     if (!user.gamesCompletedByType)
       user.gamesCompletedByType = new Map<string, number>();
@@ -58,7 +58,7 @@ export const createWordSearchGame = async (
 
     if (currentCount >= 100) {
       return res.status(400).json({
-        message: `You have already completed 100 ${gameType}. Please reset the counter to start a new series.`,
+        message: `Ya has completado 100 ${gameType}. Por favor, reinicia el contador para comenzar una nueva serie.`,
       });
     }
     let game = await Game.findOne({
@@ -75,7 +75,7 @@ export const createWordSearchGame = async (
     if (game)
       return res
         .status(400)
-        .json({ message: "You already have an in Progress WordSearchGame" });
+        .json({ message: "Ya tienes una sopa de letras en progreso" });
 
     game = new Game({
       name: "Sopa de letras",
@@ -123,7 +123,7 @@ export const completeCurrentGame = async (
     const userId = req.user?.id;
     const wordSearchGame = await WordSearchGame.findById(wordSearchGameId);
     if (!wordSearchGame)
-      return res.status(404).json({ error: "WordSearchGame not found" });
+      return res.status(404).json({ error: "Sopa de letras no encontrada" });
 
     if (req.body.foundWords) wordSearchGame.foundWords = req.body.foundWords;
     const allWordsFound = wordSearchGame.words.every((word) =>
@@ -136,7 +136,7 @@ export const completeCurrentGame = async (
     await wordSearchGame.save();
 
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
     if (!user.gamesCompletedByType)
       user.gamesCompletedByType = new Map<string, number>();
 
@@ -145,7 +145,7 @@ export const completeCurrentGame = async (
 
     if (currentCount >= 100)
       return res.status(200).json({
-        message: `Congratulations! You've completed 100 ${gameType}. You can start a new series if you want to play again.`,
+        message: `¡Felicidades! Has completado 100 ${gameType}. Puedes comenzar una nueva serie si deseas jugar de nuevo.`,
       });
     user.gamesCompletedByType.set(gameType, currentCount + 1);
     await user.save();
@@ -174,7 +174,7 @@ export const completeCurrentGame = async (
       });
     } else {
       return res.status(200).json({
-        message: `You've reached the limit of 100 ${gameType}. You can reset the counter to start over.`,
+        message: `Has alcanzado el límite de 100 ${gameType}. Puedes reiniciar el contador para comenzar de nuevo.`,
       });
     }
   } catch (error: any) {
@@ -189,11 +189,11 @@ const handleIncompleteGame = async (
 ) => {
   if (req.body.forceComplete) {
     await completeGamewordSearchGame(wordSearchGame);
-    return res.status(200).json({ message: "Game forcibly completed" });
+    return res.status(200).json({ message: "Juego completado forzosamente" });
   } else {
     return res.status(400).json({
       error:
-        "All words must be found or user must choose to finish the game before completing",
+        "Todas las palabras deben ser encontradas o el usuario debe elegir terminar el juego antes de completarlo",
     });
   }
 };
@@ -215,16 +215,16 @@ export const resetGamesCompletedByType = async (
     const { gameType } = req.body;
 
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
 
     if (!gameType)
-      return res.status(400).json({ error: "Game type is required" });
+      return res.status(400).json({ error: "El tipo de juego es obligatorio" });
 
     user.gamesCompletedByType.set(gameType, 0);
     await user.save();
 
     return res.status(200).json({
-      message: `Games completed count reset for ${gameType}. You can start a new series now.`,
+      message: `El contador de juegos completados se ha reiniciado para ${gameType}. Puedes comenzar una nueva serie ahora.`,
     });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
@@ -243,7 +243,7 @@ export const deleteWordSearchGame = async (
       wordSearchGameId
     );
     if (!wordSearchGame)
-      return res.status(404).json({ error: "WordSearchGame not found" });
+      return res.status(404).json({ error: "Sopa de letras no encontrada" });
 
     await Game.findByIdAndDelete(wordSearchGame.game);
 

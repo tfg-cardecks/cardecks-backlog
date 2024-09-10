@@ -5,74 +5,36 @@ import { Card } from "./card";
 import { Desk } from "./desk";
 import { Game } from "./game";
 
-const countries = [
-  "Argentina",
-  "Australia",
-  "Brazil",
-  "Canada",
-  "China",
-  "France",
-  "Germany",
-  "India",
-  "Italy",
-  "Japan",
-  "Mexico",
-  "Russia",
-  "South Africa",
-  "Spain",
-  "United Kingdom",
-  "United States",
-];
-
-const typesOfUser = [
-  "Student",
-  "Teacher",
-  "Other",
-];
-
 const userSchema = new Schema({
   createAt: { type: Date, default: Date.now() },
   name: {
     type: String,
-    required: [true, "Name is required"],
-    maxlength: [50, "Name too long"],
-    minlength: [3, "Name too short"],
+    required: [true, "El nombre es obligatorio"],
+    maxlength: [50, "Nombre demasiado largo"],
+    minlength: [3, "Nombre demasiado corto"],
   },
   lastName: {
     type: String,
-    required: [true, "Last name is required"],
-    maxlength: [50, "Surname too long"],
-    minlength: [3, "Surname too short"],
+    required: [true, "El apellido es obligatorio"],
+    maxlength: [50, "Apellido demasiado largo"],
+    minlength: [3, "Apellido demasiado corto"],
   },
-
   email: {
     type: String,
-    required: [true, "Email is required"],
+    required: [true, "El correo electrónico es obligatorio"],
     unique: true,
   },
   username: {
     type: String,
-    required: [true, "Username is required"],
-    maxlength: [30, "Username too long"],
-    minlength: [3, "Username too short"],
+    required: [true, "El nombre de usuario es obligatorio"],
+    maxlength: [30, "Nombre de usuario demasiado largo"],
+    minlength: [3, "Nombre de usuario demasiado corto"],
     unique: true,
   },
   password: {
     type: String,
-    required: [true, "Password is required"],
-    minlenght: [6, "Password too short"],
-  },
-  location: {
-    type: String,
-    required: [true, "Location is required"],
-    enum: countries,
-    trim: true,
-  },
-  typeOfUser: {
-    type: String,
-    required: false,
-    enum: typesOfUser,
-    trim: true,
+    required: [true, "La contraseña es obligatoria"],
+    minlength: [6, "Contraseña demasiado corta"],
   },
   role: {
     ref: Role,

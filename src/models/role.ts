@@ -4,9 +4,9 @@ import { Schema } from "mongoose";
 const roleSchema = new Schema({
   name: {
     type: String,
-    required: [true, "Name is required"],
-    maxlenght: [50, "Name too long"],
-    minlenght: [3, "Name too short"],
+    required: [true, "El nombre es obligatorio"],
+    maxlength: [50, "Nombre demasiado largo"],
+    minlength: [3, "Nombre demasiado corto"],
     unique: true,
   },
 });

@@ -1,8 +1,11 @@
 import { Request, Response } from "express";
 
-//local imports
+// Local imports
 import { Card } from "../models/card";
-import { handleValidationErrors } from "../validators/validate";
+import {
+  handleSpecificValidationErrors,
+  validateCardData,
+} from "../validators/validate";
 import { User } from "../models/user";
 import { CustomRequest } from "../interfaces/customRequest";
 import { generateCardImage } from "../utils/generateCardImage";
@@ -19,7 +22,7 @@ export const getCards = async (_req: Request, res: Response) => {
 export const getCardById = async (req: Request, res: Response) => {
   try {
     const card = await Card.findById(req.params.id);
-    if (!card) return res.status(404).json({ message: "Card not found" });
+    if (!card) return res.status(404).json({ message: "Carta no encontrada" });
     return res.status(200).json(card);
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
@@ -30,11 +33,14 @@ export const createCard = async (req: CustomRequest, res: Response) => {
   try {
     const userId = req.user?.id;
     const cardData = req.body;
+
     if (!userId)
-      return res.status(401).json({ message: "User not authenticated" });
+      return res.status(401).json({ message: "Usuario no autenticado" });
 
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+
+    validateCardData(cardData);
 
     const card = new Card(cardData);
     const validationError = card.validateSync();
@@ -43,8 +49,8 @@ export const createCard = async (req: CustomRequest, res: Response) => {
     }
 
     const { frontImageUrl, backImageUrl } = await generateCardImage(cardData);
-    cardData.frontImageUrl = frontImageUrl;
-    cardData.backImageUrl = backImageUrl;
+    card.frontImageUrl = frontImageUrl;
+    card.backImageUrl = backImageUrl;
 
     await card.save();
 
@@ -53,30 +59,35 @@ export const createCard = async (req: CustomRequest, res: Response) => {
 
     return res.status(201).json(card);
   } catch (error: any) {
-    if (error.code === 11000) { 
-      return res.status(400).json({ message: "Card with this title already exists" });
+    if (error.code === 11000) {
+      return res
+        .status(400)
+        .json({ message: "Ya existe una carta con este título" });
     }
-    handleValidationErrors(error, res);
+    handleSpecificValidationErrors(error, res);
   }
 };
 
 export const updateCard = async (req: Request, res: Response) => {
   try {
-    const card = await Card.findByIdAndUpdate(req.params.id, req.body, {
+    const cardData = req.body;
+    validateCardData(cardData);
+
+    const card = await Card.findByIdAndUpdate(req.params.id, cardData, {
       runValidators: true,
     });
-    if (!card) return res.status(404).json({ message: "Card not found" });
+    if (!card) return res.status(404).json({ message: "Carta no encontrada" });
     return res.status(200).json(card);
   } catch (error: any) {
-    handleValidationErrors(error, res);
+    handleSpecificValidationErrors(error, res);
   }
 };
 
 export const deleteCard = async (req: Request, res: Response) => {
   try {
     const card = await Card.findByIdAndDelete(req.params.id);
-    if (!card) return res.status(404).json({ message: "Card not found" });
-    return res.status(204).json({ message: "Card deleted successfully" });
+    if (!card) return res.status(404).json({ message: "Carta no encontrada" });
+    return res.status(204).json({ message: "Carta eliminada con éxito" });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
   }
@@ -86,7 +97,7 @@ export const getCardsByUserId = async (req: Request, res: Response) => {
   try {
     const userId = req.params.userId;
     const user = await User.findById(userId).populate("cards");
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
 
     return res.status(200).json(user.cards);
   } catch (error: any) {

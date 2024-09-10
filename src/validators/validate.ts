@@ -6,7 +6,7 @@ import { User } from "../models/user";
 
 export function handleValidateRole(role: string, res: Response) {
   if (!roles.map((r) => r.name).includes(role)) {
-    return res.status(400).json({ message: "Invalid role" });
+    return res.status(400).json({ message: "Rol inválido" });
   }
 }
 
@@ -19,14 +19,14 @@ export async function handleValidateUniqueUser(
       $or: [{ email: credentials.email }, { username: credentials.username }],
     })
   ) {
-    return res.status(400).json({ message: "User already exists" });
+    return res.status(400).json({ message: "El usuario ya existe" });
   }
 }
 
 export function handleValidateEmail(email: string, res: Response) {
   if (!/^\w+([.-]?\w+)*@(gmail|hotmail|outlook)\.com$/.test(email))
     return res.status(400).json({
-      message: "Email must be an email from gmail, hotmail or outlook",
+      message: "El correo electrónico debe ser de gmail, hotmail o outlook",
     });
 }
 
@@ -34,33 +34,8 @@ export function handleValidatePassword(password: string, res: Response) {
   if (!/(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W)/.test(password))
     return res.status(400).json({
       message:
-        "Password must have at least one lowercase letter, one uppercase letter, one number and one special character",
+        "La contraseña debe tener al menos una letra minúscula, una letra mayúscula, un número y un carácter especial",
     });
-}
-
-export function handleValidateLocation(location: string, res: Response) {
-  const countries = [
-    "Argentina",
-    "Australia",
-    "Brazil",
-    "Canada",
-    "China",
-    "France",
-    "Germany",
-    "India",
-    "Italy",
-    "Japan",
-    "Mexico",
-    "Russia",
-    "South Africa",
-    "Spain",
-    "United Kingdom",
-    "United States",
-  ];
-
-  if (!countries.includes(location)) {
-    return res.status(400).send({ message: "Invalid location" });
-  }
 }
 
 export function handleValidationErrors(error: any, res: Response) {
@@ -72,20 +47,6 @@ export function handleValidationErrors(error: any, res: Response) {
   });
 }
 
-export const handleValidateTypeOfUser = (typeOfUser: string, res: Response): boolean => {
-  const typesOfUser = [
-    "Student",
-    "Teacher",
-    "Other",
-  ];
-  
-  if (!typesOfUser.includes(typeOfUser)) {
-    res.status(400).json({ message: `Invalid typeOfUser: ${typeOfUser}` });
-    return true;
-  }
-  return false;
-};
-
 export async function checkPassword(
   password: string,
   res: Response,
@@ -93,5 +54,35 @@ export async function checkPassword(
 ) {
   const matchPassword = await bycrypt.compare(password, user.password);
   if (!matchPassword)
-    return res.status(401).json({ message: "Invalid password" });
+    return res.status(401).json({ message: "Contraseña inválida" });
 }
+
+export const validateCardData = (cardData: any) => {
+  const { cardType, frontSide, backSide } = cardData;
+
+  if (cardType === "txtImg") {
+
+    if (!frontSide || !frontSide.text || frontSide.text.length !== 1) {
+      throw new Error("Para el tipo 'txtImg', el frente debe tener un texto.");
+    }
+    if (!backSide || !backSide.images || backSide.images.length !== 1) {
+      throw new Error("Para el tipo 'txtImg', el reverso debe tener una imagen.");
+    }
+  } else if (cardType === "txtTxt") {
+    if (!frontSide || !frontSide.text || frontSide.text.length !== 1) {
+      throw new Error("Para el tipo 'txtTxt', el frente debe tener un texto.");
+    }
+    if (!backSide || !backSide.text || backSide.text.length !== 1) {
+      throw new Error("Para el tipo 'txtTxt', el reverso debe tener un texto.");
+    }
+  } else {
+    throw new Error("Tipo de carta inválido.");
+  }
+};
+
+export const handleSpecificValidationErrors = (error: any, res: Response) => {
+  if (error.message) {
+    return res.status(400).json({ message: error.message });
+  }
+  return res.status(500).json({ message: "Ocurrió un error desconocido" });
+};

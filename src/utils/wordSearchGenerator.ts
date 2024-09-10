@@ -5,13 +5,13 @@ export function generateWordSearchGrid(
   gridSize: number = 10
 ): string[][] {
   if (gridSize < 1) {
-    throw new Error("Grid size must be at least 1.");
+    throw new Error("El tamaño de la cuadrícula debe ser al menos 1.");
   }
 
   const validWords = filterValidWords(words, gridSize);
 
   if (validWords.length < 3)
-    throw new Error("Not enough valid words to fit in the grid.");
+    throw new Error("No hay suficientes palabras válidas para encajar en la cuadrícula.");
 
   const numWords = getRandomInt(3, 5);
   const selectedWords = selectRandomWords(validWords, numWords);

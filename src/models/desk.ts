@@ -4,20 +4,20 @@ import { Schema } from "mongoose";
 const deskSchema = new Schema({
   name: {
     type: String,
-    required: [true, "Name is required"],
-    maxlength: [50, "Name too long"],
-    minlength: [3, "Name too short"],
+    required: [true, "El nombre es obligatorio"],
+    maxlength: [50, "Nombre demasiado largo"],
+    minlength: [3, "Nombre demasiado corto"],
   },
   description: {
     type: String,
-    required: [true, "Description is required"],
-    maxlength: [500, "Description too long"],
-    minlength: [3, "Description too short"],
+    required: [true, "La descripción es obligatoria"],
+    maxlength: [500, "Descripción demasiado larga"],
+    minlength: [3, "Descripción demasiado corta"],
   },
   theme: {
     type: String,
     enum: ["Cultura", "Gramática", "Vocabulario", "Ejercicio", "Libre"],
-    required: [true, "Theme is required"],
+    required: [true, "El tema es obligatorio"],
   },
 
   cards: [

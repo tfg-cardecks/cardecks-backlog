@@ -4,10 +4,10 @@ import { Schema } from "mongoose";
 const gameSchema = new Schema({
   name: {
     type: String,
-    required: [true, "Name is required"],
+    required: [true, "El nombre es obligatorio"],
     unique: false,
-    maxlength: [50, "Name can't be longer than 50 characters"],
-    minlength: [2, "Name can't be shorter than 2 characters"],
+    maxlength: [50, "El nombre no puede tener más de 50 caracteres"],
+    minlength: [2, "El nombre no puede tener menos de 2 caracteres"],
   },
   description: {
     type: String,
@@ -16,7 +16,7 @@ const gameSchema = new Schema({
   },
   gameType: {
     type: String,
-    required: [true, "Game Type is required"],
+    required: [true, "El tipo de juego es obligatorio"],
     enum: ["WordSearchGame"],
   },
   user: { type: Schema.Types.ObjectId, ref: "User", required: true },

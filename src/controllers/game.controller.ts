@@ -17,7 +17,7 @@ export const getGameById = async (req: Request, res: Response) => {
     const { id } = req.params;
     const game = await Game.findById(id);
     if (!game) {
-      return res.status(404).json({ message: "Game not found" });
+      return res.status(404).json({ message: "Juego no encontrado" });
     }
     return res.json(game);
   } catch (error: any) {
@@ -30,9 +30,9 @@ export const deleteGame = async (req: Request, res: Response) => {
     const { id } = req.params;
     const game = await Game.findByIdAndDelete(id);
     if (!game) {
-      return res.status(404).json({ message: "Game not found" });
+      return res.status(404).json({ message: "Juego no encontrado" });
     }
-    return res.status(204).json({ message: "Game deleted" }); 
+    return res.status(204).json({ message: "Juego eliminado" }); 
     
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
