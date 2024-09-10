@@ -7,6 +7,7 @@ import {
   createCard,
   updateCard,
   deleteCard,
+  getCardsByUserId,
 } from "../controllers/card.controller";
 import {
   uploadCardImage,
@@ -29,5 +30,6 @@ router.post(
   errorHandlingFiles,
   uploadCardImage
 );
+router.get("/user/:userId/cards", checkUserRol, getCardsByUserId);
 
 export default router;

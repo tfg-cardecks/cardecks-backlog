@@ -5,6 +5,7 @@ import { Card } from "../models/card";
 import { handleValidationErrors } from "../validators/validate";
 import { User } from "../models/user";
 import { CustomRequest } from "../interfaces/customRequest";
+import { generateCardImage } from "../utils/generateCardImage";
 
 export const getCards = async (_req: Request, res: Response) => {
   try {
@@ -35,6 +36,10 @@ export const createCard = async (req: CustomRequest, res: Response) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    const { frontImageUrl, backImageUrl } = await generateCardImage(cardData);
+    cardData.frontImageUrl = frontImageUrl;
+    cardData.backImageUrl = backImageUrl;
+
     const card = new Card(cardData);
     await card.save();
 
@@ -64,6 +69,18 @@ export const deleteCard = async (req: Request, res: Response) => {
     const card = await Card.findByIdAndDelete(req.params.id);
     if (!card) return res.status(404).json({ message: "Card not found" });
     return res.status(204).json({ message: "Card deleted successfully" });
+  } catch (error: any) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export const getCardsByUserId = async (req: Request, res: Response) => {
+  try {
+    const userId = req.params.userId;
+    const user = await User.findById(userId).populate("cards");
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    return res.status(200).json(user.cards);
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
   }

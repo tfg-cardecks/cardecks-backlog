@@ -2,6 +2,7 @@ import express, { Express, Request, Response } from "express";
 import morgan from "morgan";
 import cors from "cors";
 import expressOasGenerator from "express-oas-generator";
+import path from 'path';
 
 //local imports
 import authRoutes from "./routes/auth.routes";
@@ -27,6 +28,9 @@ app.use("/api", userRoutes);
 app.get("/", (_req: Request, res: Response) => {
   res.redirect("/api-docs/");
 });
+
+app.use('/images', express.static(path.join(__dirname, 'images')));
+
 
 expressOasGenerator.handleResponses(app, {
   mongooseModels: ["User", "Card", "Desk", "Game", "WordSearchGame", "Role"],
