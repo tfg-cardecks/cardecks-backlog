@@ -91,15 +91,12 @@ export const generateCardImage = async (cardData: any) => {
     const canvas = createCardCanvas(cardWidth, cardHeight);
     const ctx = canvas.getContext("2d");
 
-    // Generar y guardar el lado frontal
     await drawCardSide(ctx, canvas, cardData, cardData.frontSide);
     const frontImagePath = path.join(__dirname, `../images/${cardData.title}_front.png`);
     saveImageToFile(canvas, frontImagePath);
 
-    // Limpiar el canvas antes de dibujar el lado trasero
     clearCanvas(ctx, canvas);
 
-    // Generar y guardar el lado trasero
     await drawCardSide(ctx, canvas, cardData, cardData.backSide);
     const backImagePath = path.join(__dirname, `../images/${cardData.title}_back.png`);
     saveImageToFile(canvas, backImagePath);

@@ -7,6 +7,7 @@ const cardSchema = new Schema({
     required: [true, "Title is required"],
     maxlength: [50, "Title too long"],
     minlength: [3, "Title too short"],
+    unique: true,
   },
   cardWidth: { type: Number, default: 300, immutable: true },
   cardHeight: { type: Number, default: 500, immutable: true },

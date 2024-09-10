@@ -36,11 +36,16 @@ export const createCard = async (req: CustomRequest, res: Response) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    const card = new Card(cardData);
+    const validationError = card.validateSync();
+    if (validationError) {
+      return res.status(400).json({ message: validationError.message });
+    }
+
     const { frontImageUrl, backImageUrl } = await generateCardImage(cardData);
     cardData.frontImageUrl = frontImageUrl;
     cardData.backImageUrl = backImageUrl;
 
-    const card = new Card(cardData);
     await card.save();
 
     user.cards.push(card._id);
@@ -48,6 +53,9 @@ export const createCard = async (req: CustomRequest, res: Response) => {
 
     return res.status(201).json(card);
   } catch (error: any) {
+    if (error.code === 11000) { 
+      return res.status(400).json({ message: "Card with this title already exists" });
+    }
     handleValidationErrors(error, res);
   }
 };
