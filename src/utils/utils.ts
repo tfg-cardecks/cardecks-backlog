@@ -3,7 +3,7 @@ import { red, cyan, green } from "colorette";
 //local imports
 import { Role } from "../models/role";
 import { User } from "../models/user";
-import { Desk } from "../models/desk";
+import { Deck } from "../models/deck";
 import { Game } from "../models/game";
 
 export const roles = [
@@ -27,7 +27,7 @@ async function createModels() {
     createRoles();
     console.log(green("Creando modelos..."));
     await User.createCollection();
-    await Desk.createCollection();
+    await Deck.createCollection();
     await Game.createCollection();
     console.log(cyan("Modelo de usuario creado"));
   } catch (error: any) {

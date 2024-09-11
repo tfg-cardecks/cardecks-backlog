@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 // local imports
 import { User } from "../models/user";
 import { Card } from "../models/card";
-import { Desk } from "../models/desk";
+import { Deck } from "../models/deck";
 import { Game } from "../models/game";
 import { WordSearchGame } from "../models/games/wordSearchGame";
 
@@ -38,7 +38,7 @@ export const deleteUser = async (req: Request, res: Response) => {
     }
 
     await Card.deleteMany({ _id: { $in: user.cards } });
-    await Desk.deleteMany({ _id: { $in: user.desks } });
+    await Deck.deleteMany({ _id: { $in: user.decks } });
     await Game.deleteMany({ _id: { $in: user.games } });
     await WordSearchGame.deleteMany({ user: id });
     await User.findByIdAndDelete(id);

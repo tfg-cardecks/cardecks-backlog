@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { Schema } from "mongoose";
 import { Role } from "./role";
 import { Card } from "./card";
-import { Desk } from "./desk";
+import { Deck } from "./deck";
 import { Game } from "./game";
 
 const userSchema = new Schema({
@@ -48,7 +48,7 @@ const userSchema = new Schema({
     default: {},
   },
   cards: [{ type: Schema.Types.ObjectId, ref: Card }],
-  desks: [{ type: Schema.Types.ObjectId, ref: Desk }],
+  decks: [{ type: Schema.Types.ObjectId, ref: Deck }],
   games: [{ type: Schema.Types.ObjectId, ref: Game }],
 });
 

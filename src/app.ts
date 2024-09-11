@@ -7,7 +7,7 @@ import path from 'path';
 //local imports
 import authRoutes from "./routes/auth.routes";
 import cardRoutes from "./routes/card.routes";
-import deskRoutes from "./routes/desk.routes";
+import deckRoutes from "./routes/deck.routes";
 import gameRoutes from "./routes/game.routes";
 import wordSearchGameRoutes from "./routes/games/wordSearchGame.routes";
 import userRoutes from "./routes/user.routes";
@@ -20,7 +20,7 @@ app.use(cors());
 
 app.use("/api/auth", authRoutes);
 app.use("/api", cardRoutes);
-app.use("/api", deskRoutes);
+app.use("/api", deckRoutes);
 app.use("/api", gameRoutes);
 app.use("/api", wordSearchGameRoutes);
 app.use("/api", userRoutes);
@@ -33,7 +33,7 @@ app.use('/images', express.static(path.join(__dirname, 'images')));
 
 
 expressOasGenerator.handleResponses(app, {
-  mongooseModels: ["User", "Card", "Desk", "Game", "WordSearchGame", "Role"],
+  mongooseModels: ["User", "Card", "Deck", "Game", "WordSearchGame", "Role"],
   swaggerDocumentOptions: { info: { title: "Cardecks API", version: "1.0.0" } },
   specOutputFileBehavior: "PRESERVE",
 });
