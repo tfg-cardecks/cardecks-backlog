@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 
 // Local imports
 import { Card } from "../models/card";
+import { Deck } from "../models/deck";
 import {
   handleSpecificValidationErrors,
   validateCardData,
@@ -87,6 +88,12 @@ export const deleteCard = async (req: Request, res: Response) => {
   try {
     const card = await Card.findByIdAndDelete(req.params.id);
     if (!card) return res.status(404).json({ message: "Carta no encontrada" });
+
+    await Deck.updateMany(
+      { cards: card._id },
+      { $pull: { cards: card._id } }
+    );
+
     return res.status(204).json({ message: "Carta eliminada con éxito" });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });

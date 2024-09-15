@@ -86,3 +86,14 @@ export const handleSpecificValidationErrors = (error: any, res: Response) => {
   }
   return res.status(500).json({ message: "Ocurrió un error desconocido" });
 };
+
+export const handleValidationErrorsDeckUpdate = (error: any, res: Response) => {
+  if (error.name === 'ValidationError') {
+    const errors = Object.values(error.errors).map((err: any) => err.message);
+    return res.status(400).json({ errors });
+  } else if (error.name === 'CastError') {
+    return res.status(400).json({ message: `ID no válido: ${error.value}` });
+  } else {
+    return res.status(500).json({ message: error.message });
+  }
+};

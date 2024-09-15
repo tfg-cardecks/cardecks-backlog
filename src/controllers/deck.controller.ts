@@ -1,9 +1,10 @@
 import { Request, Response } from "express";
+import { Types } from "mongoose";
 
 //local imports
 import { Deck } from "../models/deck";
 import { User } from "../models/user";
-import { handleValidationErrors } from "../validators/validate";
+import { handleValidationErrors, handleValidationErrorsDeckUpdate } from "../validators/validate";
 import { CustomRequest } from "../interfaces/customRequest";
 import { Card } from "../models/card";
 
@@ -71,15 +72,41 @@ export const createDeck = async (req: CustomRequest, res: Response) => {
   }
 };
 
-export const updateDeck = async (req: Request, res: Response) => {
+export const updateDeck = async (req: CustomRequest, res: Response) => {
   try {
-    const deck = await Deck.findByIdAndUpdate(req.params.id, req.body, {
-      runValidators: true,
-    });
+    const userId = req.user?.id;
+    const { theme, description, cards } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Usuario no autenticado" });
+    }
+
+    const deck = await Deck.findById(req.params.id);
     if (!deck) return res.status(404).json({ message: "Mazo no encontrado" });
+
+    if (theme) deck.theme = theme;
+    if (description) deck.description = description;
+
+    if (Array.isArray(cards)) {
+      const invalidCardIds = cards.filter(cardId => !Types.ObjectId.isValid(cardId));
+      if (invalidCardIds.length > 0) {
+        return res.status(400).json({ message: `IDs de cartas no válidos: ${invalidCardIds.join(', ')}` });
+      }
+
+      const cardIds = await Card.find({ _id: { $in: cards } }).select('_id');
+      const existingCardIds = cardIds.map(card => card._id.toString());
+
+      const nonExistingCards = cards.filter(cardId => !existingCardIds.includes(cardId));
+      if (nonExistingCards.length > 0) {
+        return res.status(400).json({ message: `Una o más cartas no existen: ${nonExistingCards.join(', ')}` });
+      }
+      deck.cards = existingCardIds.map(id => new Types.ObjectId(id));
+    }
+
+    await deck.save();
     return res.status(200).json(deck);
   } catch (error: any) {
-    handleValidationErrors(error, res);
+    handleValidationErrorsDeckUpdate(error, res);
   }
 };
 
@@ -87,11 +114,18 @@ export const deleteDeck = async (req: Request, res: Response) => {
   try {
     const deck = await Deck.findByIdAndDelete(req.params.id);
     if (!deck) return res.status(404).json({ message: "Mazo no encontrado" });
+
+    await Card.updateMany(
+      { _id: { $in: deck.cards } },
+      { $pull: { decks: deck._id } }
+    );
+
     return res.status(204).json({ message: "Mazo eliminado con éxito" });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
   }
 };
+
 
 export const getDecksByUserId = async (req: Request, res: Response) => {
   try {
