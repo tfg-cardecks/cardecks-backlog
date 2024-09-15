@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { Schema } from "mongoose";
+import { Card } from "./card";
 
 const deckSchema = new Schema({
   name: {
@@ -12,18 +13,21 @@ const deckSchema = new Schema({
   description: {
     type: String,
     required: [true, "La descripción es obligatoria"],
-    maxlength: [500, "Descripción demasiado larga"],
-    minlength: [3, "Descripción demasiado corta"],
+    maxlength: [500, "Descripción demasiado largo"],
+    minlength: [3, "Descripción demasiado corto"],
   },
   theme: {
     type: String,
     required: [true, "El tema es obligatorio"],
+    maxlength: [50, "Tema demasiado largo"],
+    minlength: [3, "Tema demasiado corto"],
+
   },
 
   cards: [
     {
       type: Schema.Types.ObjectId,
-      ref: "Card",
+      ref: Card,
     },
   ],
   createAt: { type: Date, default: Date.now() },
