@@ -115,6 +115,11 @@ export const deleteDeck = async (req: Request, res: Response) => {
     const deck = await Deck.findByIdAndDelete(req.params.id);
     if (!deck) return res.status(404).json({ message: "Mazo no encontrado" });
 
+    await User.updateMany(
+      { decks: deck._id },
+      { $pull: { decks: deck._id } }
+    );
+
     await Card.updateMany(
       { _id: { $in: deck.cards } },
       { $pull: { decks: deck._id } }

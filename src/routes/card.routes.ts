@@ -8,6 +8,8 @@ import {
   updateCard,
   deleteCard,
   getCardsByUserId,
+  exportCard,
+  importCard,
 } from "../controllers/card.controller";
 import {
   uploadCardImage,
@@ -31,5 +33,7 @@ router.post(
   uploadCardImage
 );
 router.get("/user/:userId/cards", checkUserRol, getCardsByUserId);
+router.post('/card/export/:id', checkUserRol, exportCard);
+router.post('/card/import', checkUserRol, upload.single('file'), importCard);
 
 export default router;
