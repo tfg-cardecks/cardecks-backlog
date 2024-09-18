@@ -10,9 +10,7 @@ import {
 import { User } from "../models/user";
 import { CustomRequest } from "../interfaces/customRequest";
 import { generateCardImage } from "../utils/generateCardImage";
-import { v4 as uuidv4 } from 'uuid';
-import multer from 'multer';
-
+import { v4 as uuidv4 } from "uuid";
 
 export const getCards = async (_req: Request, res: Response) => {
   try {
@@ -42,7 +40,8 @@ export const createCard = async (req: CustomRequest, res: Response) => {
       return res.status(401).json({ message: "Usuario no autenticado" });
 
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+    if (!user)
+      return res.status(404).json({ message: "Usuario no encontrado" });
 
     validateCardData(cardData);
 
@@ -92,15 +91,9 @@ export const deleteCard = async (req: Request, res: Response) => {
     const card = await Card.findByIdAndDelete(req.params.id);
     if (!card) return res.status(404).json({ message: "Carta no encontrada" });
 
-    await User.updateMany(
-      { cards: card._id },
-      { $pull: { cards: card._id } }
-    );
+    await User.updateMany({ cards: card._id }, { $pull: { cards: card._id } });
 
-    await Deck.updateMany(
-      { cards: card._id },
-      { $pull: { cards: card._id } }
-    );
+    await Deck.updateMany({ cards: card._id }, { $pull: { cards: card._id } });
 
     return res.status(204).json({ message: "Carta eliminada con éxito" });
   } catch (error: any) {
@@ -112,7 +105,8 @@ export const getCardsByUserId = async (req: Request, res: Response) => {
   try {
     const userId = req.params.userId;
     const user = await User.findById(userId).populate("cards");
-    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+    if (!user)
+      return res.status(404).json({ message: "Usuario no encontrado" });
 
     return res.status(200).json(user.cards);
   } catch (error: any) {
@@ -134,8 +128,11 @@ export const exportCard = async (req: Request, res: Response) => {
 
     const cardData = card.toJSON();
 
-    res.setHeader('Content-Disposition', `attachment; filename=${exportTitle}.json`);
-    res.setHeader('Content-Type', 'application/json');
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=${exportTitle}.json`
+    );
+    res.setHeader("Content-Type", "application/json");
 
     return res.status(200).json(cardData);
   } catch (error: any) {
@@ -147,29 +144,46 @@ export const importCard = async (req: CustomRequest, res: Response) => {
   try {
     const userId = req.user?.id;
 
-    if (!userId) {
-      return res.status(401).json({ message: "Usuario no autenticado" });
-    }
+    if (!userId) return res.status(401).json({ message: "Usuario no autenticado" });
 
     const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "Usuario no encontrado" });
-    }
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
 
     if (!req.file) {
       return res.status(400).json({ message: "No se ha proporcionado ningún archivo." });
     }
 
-    const fileContent = req.file.buffer.toString('utf-8');
-    const cardData = JSON.parse(fileContent);
+    const fileContent = req.file.buffer.toString("utf-8");
+    let cardData;
+    try {
+      cardData = JSON.parse(fileContent);
+    } catch (error) {
+      return res
+        .status(400)
+        .json({ message: "El archivo proporcionado no es un JSON válido." });
+    }
 
-    validateCardData(cardData);
+    try {
+      validateCardData(cardData);
+    } catch (error) {
+      if (error instanceof Error) {
+        return res.status(400).json({ message: `Carta inválida: ${error.message}` });
+      } else {
+        return res.status(400).json({ message: "Carta inválida: Error desconocido" });
+      }
+    }
 
-    const uniqueSuffix = uuidv4().split('-')[0];
+    const uniqueSuffix = uuidv4().split("-")[0];
     cardData.title = `${cardData.title}-${uniqueSuffix}`;
-
-    delete cardData._id;
-
+    const removeIds = (obj: any) => {
+      if (Array.isArray(obj)) {
+        obj.forEach(removeIds);
+      } else if (obj && typeof obj === "object") {
+        delete obj._id;
+        Object.values(obj).forEach(removeIds);
+      }
+    };
+    removeIds(cardData);
     const card = new Card(cardData);
     const validationError = card.validateSync();
     if (validationError) {
@@ -177,12 +191,14 @@ export const importCard = async (req: CustomRequest, res: Response) => {
     }
 
     await card.save();
-
     user.cards.push(card._id);
     await user.save();
-
     return res.status(201).json(card);
   } catch (error: any) {
-    return res.status(500).json({ message: error.message });
+    if (error instanceof Error) {
+      return res.status(500).json({ message: error.message });
+    } else {
+      return res.status(500).json({ message: "Error desconocido" });
+    }
   }
 };
