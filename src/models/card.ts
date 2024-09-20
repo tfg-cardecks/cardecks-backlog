@@ -14,6 +14,9 @@ const cardSchema = new Schema({
   theme: {
     type: String,
     required: [true, "El tema es obligatorio"],
+    maxlength: [50, "El tema es demasiado largo"],
+    minlength: [3, "El tema es demasiado corto"],
+
   },
   cardType: {
     type: String,
@@ -31,9 +34,9 @@ const cardSchema = new Schema({
           required: false,
           validate: {
             validator: function (value: number) {
-              return value >= 0 && value <= 150;
+              return value >= 0 && value <= 200;
             },
-            message: "La posición izquierda debe estar dentro del ancho de la carta",
+            message: "La posición lateral de la Parte Delantera debe estar dentro del ancho de la carta",
           },
         },
         top: {
@@ -43,7 +46,7 @@ const cardSchema = new Schema({
             validator: function (value: number) {
               return value >= 100 && value <= 300;
             },
-            message: "La posición superior debe estar dentro de la altura de la carta",
+            message: "La posición superior e inferior de la Parte Delantera debe estar dentro de la altura de la carta",
           },
         },
       },
@@ -60,9 +63,9 @@ const cardSchema = new Schema({
           required: false,
           validate: {
             validator: function (value: number) {
-              return value >= 0 && value <= 100;
+              return value >= 0 && value <= 200;
             },
-            message: "La posición izquierda debe estar dentro del ancho de la carta",
+            message: "La posición lateral de la Parte Trasera debe estar dentro del ancho de la carta",
           },
         },
         top: {
@@ -70,9 +73,9 @@ const cardSchema = new Schema({
           required: false,
           validate: {
             validator: function (value: number) {
-              return value >= 100 && value <= 300;
+              return value >= 100 && value <= 400;
             },
-            message: "La posición superior debe estar dentro de la altura de la carta",
+            message: "La posición superior de la Parte Trasera debe estar dentro de la altura de la carta",
           },
         },
       },
@@ -89,7 +92,7 @@ const cardSchema = new Schema({
             validator: function (value: number) {
               return value >= 0 && value <= 300;
             },
-            message: "La posición izquierda debe estar dentro del ancho de la carta",
+            message: "La posición lateral de la Parte Trasera debe estar dentro del ancho de la carta",
           },
         },
         top: {
@@ -99,7 +102,7 @@ const cardSchema = new Schema({
             validator: function (value: number) {
               return value >= 0 && value <= 500;
             },
-            message: "La posición superior debe estar dentro de la altura de la carta",
+            message: "La posición superior de la Parte Trasera debe estar dentro de la altura de la carta",
           },
         },
         width: {
@@ -108,7 +111,7 @@ const cardSchema = new Schema({
             validator: function (value: number) {
               return value > 0 && value <= 300;
             },
-            message: "El ancho debe estar dentro del ancho de la carta",
+            message: "El ancho de la Parte Trasera debe estar dentro del ancho de la carta",
           },
         },
         height: {
@@ -117,7 +120,7 @@ const cardSchema = new Schema({
             validator: function (value: number) {
               return value > 0 && value <= 500;
             },
-            message: "La altura debe estar dentro de la altura de la carta",
+            message: "La altura de la Parte Trasera debe estar dentro de la altura de la carta",
           },
         },
       },

@@ -43,23 +43,35 @@ export const createCard = async (req: CustomRequest, res: Response) => {
     if (!user)
       return res.status(404).json({ message: "Usuario no encontrado" });
 
+    cardData.frontSide = cardData.frontSide || { text: [] };
+    cardData.backSide = cardData.backSide || { text: [], images: [] };
+
     validateCardData(cardData);
 
     const card = new Card(cardData);
     const validationError = card.validateSync();
     if (validationError) {
-      return res.status(400).json({ message: validationError.message });
+      const errorMessages = Object.values(validationError.errors).map(
+        (error: any) => error.message
+      );
+      const formattedErrorMessages = errorMessages.join("\n");
+      console.log(formattedErrorMessages);
+      return res.status(400).json({ message: formattedErrorMessages });
     }
 
-    const { frontImageUrl, backImageUrl } = await generateCardImage(cardData);
-    card.frontImageUrl = frontImageUrl;
-    card.backImageUrl = backImageUrl;
+    try {
+      const { frontImageUrl, backImageUrl } = await generateCardImage(cardData);
+      card.frontImageUrl = frontImageUrl;
+      card.backImageUrl = backImageUrl;
+    } catch (imageError) {
+      console.error("Error al generar la imagen de la carta:", imageError);
+      const errorMessage = imageError instanceof Error ? imageError.message : "Error desconocido";
+      return res.status(500).json({ message: `Error al generar la imagen de la carta: ${errorMessage}` });
+    }
 
     await card.save();
-
     user.cards.push(card._id);
     await user.save();
-
     return res.status(201).json(card);
   } catch (error: any) {
     if (error.code === 11000) {
@@ -144,13 +156,17 @@ export const importCard = async (req: CustomRequest, res: Response) => {
   try {
     const userId = req.user?.id;
 
-    if (!userId) return res.status(401).json({ message: "Usuario no autenticado" });
+    if (!userId)
+      return res.status(401).json({ message: "Usuario no autenticado" });
 
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+    if (!user)
+      return res.status(404).json({ message: "Usuario no encontrado" });
 
     if (!req.file) {
-      return res.status(400).json({ message: "No se ha proporcionado ningún archivo." });
+      return res
+        .status(400)
+        .json({ message: "No se ha proporcionado ningún archivo." });
     }
 
     const fileContent = req.file.buffer.toString("utf-8");
@@ -167,9 +183,13 @@ export const importCard = async (req: CustomRequest, res: Response) => {
       validateCardData(cardData);
     } catch (error) {
       if (error instanceof Error) {
-        return res.status(400).json({ message: `Carta inválida: ${error.message}` });
+        return res
+          .status(400)
+          .json({ message: `Carta inválida: ${error.message}` });
       } else {
-        return res.status(400).json({ message: "Carta inválida: Error desconocido" });
+        return res
+          .status(400)
+          .json({ message: "Carta inválida: Error desconocido" });
       }
     }
 

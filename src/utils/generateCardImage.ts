@@ -1,14 +1,14 @@
-import { createCanvas, loadImage } from 'canvas';
-import fs from 'fs';
-import path from 'path';
-import { validateCardData } from '../validators/validate';
+import { createCanvas, loadImage } from "canvas";
+import fs from "fs";
+import path from "path";
+import { validateCardData } from "../validators/validate";
 
 const createCardCanvas = (width: number, height: number) => {
   return createCanvas(width, height);
 };
 
 const drawText = (ctx: any, textArray: any[]) => {
-  textArray.forEach(text => {
+  textArray.forEach((text) => {
     ctx.fillStyle = text.color || "#000000";
     ctx.font = `${text.fontSize || 16}px Arial`;
     ctx.fillText(text.content, text.left, text.top);
@@ -18,30 +18,40 @@ const drawText = (ctx: any, textArray: any[]) => {
 const drawImages = async (ctx: any, imagesArray: any[]) => {
   for (const image of imagesArray) {
     if (image.url) {
-      const img = await loadImage(image.url);
-      ctx.drawImage(img, image.left, image.top, image.width, image.height);
+      try {
+        const img = await loadImage(image.url);
+        ctx.drawImage(img, image.left, image.top, image.width, image.height);
+      } catch (error) {
+        console.error(`Error al cargar la imagen ${image.url}:`, error);
+        throw error;
+      }
     }
   }
 };
 
-const drawCardSide = async (ctx: any, canvas: any, cardData: any, sideData: any, side: 'front' | 'back') => {
+const drawCardSide = async (
+  ctx: any,
+  canvas: any,
+  cardData: any,
+  sideData: any,
+  side: "front" | "back"
+) => {
   clearCanvas(ctx, canvas);
 
-  if (side === 'front') {
+  if (side === "front") {
     drawCardTitleAndTheme(ctx, cardData);
   } else {
-    // Fondo blanco para la parte trasera
     ctx.fillStyle = "#FFFFFF";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 
-  if (cardData.cardType === 'txtImg') {
-    if (side === 'front') {
+  if (cardData.cardType === "txtImg") {
+    if (side === "front") {
       drawText(ctx, sideData.text);
-    } else if (side === 'back') {
+    } else if (side === "back") {
       await drawImages(ctx, sideData.images);
     }
-  } else if (cardData.cardType === 'txtTxt') {
+  } else if (cardData.cardType === "txtTxt") {
     drawText(ctx, sideData.text);
   }
 };
@@ -71,18 +81,22 @@ export const generateCardImage = async (cardData: any) => {
     validateCardData(cardData);
     const cardWidth = 300;
     const cardHeight = 500;
-
     const canvas = createCardCanvas(cardWidth, cardHeight);
     const ctx = canvas.getContext("2d");
 
-    await drawCardSide(ctx, canvas, cardData, cardData.frontSide, 'front');
-    const frontImagePath = path.join(__dirname, `../images/${cardData.title}_front.png`);
+    await drawCardSide(ctx, canvas, cardData, cardData.frontSide, "front");
+    const frontImagePath = path.join(
+      __dirname,
+      `../images/${cardData.title}_front.png`
+    );
     saveImageToFile(canvas, frontImagePath);
-
     clearCanvas(ctx, canvas);
 
-    await drawCardSide(ctx, canvas, cardData, cardData.backSide, 'back');
-    const backImagePath = path.join(__dirname, `../images/${cardData.title}_back.png`);
+    await drawCardSide(ctx, canvas, cardData, cardData.backSide, "back");
+    const backImagePath = path.join(
+      __dirname,
+      `../images/${cardData.title}_back.png`
+    );
     saveImageToFile(canvas, backImagePath);
 
     return {
@@ -90,6 +104,15 @@ export const generateCardImage = async (cardData: any) => {
       backImageUrl: `/images/${cardData.title}_back.png`,
     };
   } catch (error) {
-    throw new Error("Error al generar la imagen de la carta");
+    console.error("Error en generateCardImage:", error);
+    if (error instanceof Error) {
+      throw new Error(
+        `Error al generar la imagen de la carta: ${error.message}`
+      );
+    } else {
+      throw new Error(
+        "Error al generar la imagen de la carta: Error desconocido"
+      );
+    }
   }
 };

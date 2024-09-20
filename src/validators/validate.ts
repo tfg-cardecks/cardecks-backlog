@@ -63,17 +63,17 @@ export const validateCardData = (cardData: any) => {
   if (cardType === "txtImg") {
 
     if (!frontSide || !frontSide.text || frontSide.text.length !== 1) {
-      throw new Error("Para el tipo 'txtImg', el frente debe tener un texto.");
+      throw new Error("Para el tipo 'Texto e Imagen', el frente debe tener un texto.");
     }
     if (!backSide || !backSide.images || backSide.images.length !== 1) {
-      throw new Error("Para el tipo 'txtImg', el reverso debe tener una imagen.");
+      throw new Error("Para el tipo 'Texto e Imagen', el reverso debe tener una imagen.");
     }
   } else if (cardType === "txtTxt") {
     if (!frontSide || !frontSide.text || frontSide.text.length !== 1) {
-      throw new Error("Para el tipo 'txtTxt', el frente debe tener un texto.");
+      throw new Error("Para el tipo 'Texto y Texto', el frente debe tener un texto.");
     }
     if (!backSide || !backSide.text || backSide.text.length !== 1) {
-      throw new Error("Para el tipo 'txtTxt', el reverso debe tener un texto.");
+      throw new Error("Para el tipo 'Texto y Texto', el reverso debe tener un texto.");
     }
   } else {
     throw new Error("Tipo de carta inválido.");
