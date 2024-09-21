@@ -76,7 +76,7 @@ const saveImageToFile = (canvas: any, imagePath: string) => {
   fs.writeFileSync(imagePath, buffer);
 };
 
-export const generateCardImage = async (cardData: any) => {
+export const editCardImage = async (cardData: any, suffix: string) => {
   try {
     validateCardData(cardData);
     const cardWidth = 300;
@@ -87,7 +87,7 @@ export const generateCardImage = async (cardData: any) => {
     await drawCardSide(ctx, canvas, cardData, cardData.frontSide, "front");
     const frontImagePath = path.join(
       __dirname,
-      `../images/${cardData.title}_front.png`
+      `../images/${cardData._id}_${suffix}_front.png`
     );
     saveImageToFile(canvas, frontImagePath);
     clearCanvas(ctx, canvas);
@@ -95,91 +95,16 @@ export const generateCardImage = async (cardData: any) => {
     await drawCardSide(ctx, canvas, cardData, cardData.backSide, "back");
     const backImagePath = path.join(
       __dirname,
-      `../images/${cardData.title}_back.png`
+      `../images/${cardData._id}_${suffix}_back.png`
     );
     saveImageToFile(canvas, backImagePath);
 
     return {
-      frontImageUrl: `/images/${cardData.title}_front.png`,
-      backImageUrl: `/images/${cardData.title}_back.png`,
+      frontImageUrl: `/images/${cardData._id}_${suffix}_front.png`,
+      backImageUrl: `/images/${cardData._id}_${suffix}_back.png`,
     };
   } catch (error) {
     console.error("Error en generateCardImage:", error);
-    if (error instanceof Error) {
-      throw new Error(
-        `Error al generar la imagen de la carta: ${error.message}`
-      );
-    } else {
-      throw new Error(
-        "Error al generar la imagen de la carta: Error desconocido"
-      );
-    }
-  }
-};
-
-const drawCardSide1 = async (
-  ctx: any,
-  canvas: any,
-  cardData: any,
-  sideData: any,
-  side: "front" | "back"
-) => {
-  if (side === "front") {
-    drawCardTitleAndTheme(ctx, cardData);
-  } else {
-    ctx.fillStyle = "#FFFFFF";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-  }
-
-  if (cardData.cardType === "txtImg") {
-    if (side === "front") {
-      drawText(ctx, sideData.text);
-    } else if (side === "back") {
-      await drawImages(ctx, sideData.images);
-    }
-  } else if (cardData.cardType === "txtTxt") {
-    drawText(ctx, sideData.text);
-  }
-};
-
-
-export const generateCardImageUpdate = async (cardData: any) => {
-  try {
-    validateCardData(cardData);
-
-    // Verifica que cardData._id esté definido
-    if (!cardData._id) {
-      throw new Error("El campo _id no está definido en cardData");
-    }
-
-    const cardWidth = 300;
-    const cardHeight = 500;
-    const canvas = createCardCanvas(cardWidth, cardHeight);
-    const ctx = canvas.getContext("2d");
-
-    // Generar la imagen del lado delantero
-    await drawCardSide1(ctx, canvas, cardData, cardData.frontSide, "front");
-    const frontImagePath = path.join(
-      __dirname,
-      `../images/${cardData._id}_front.png`
-    );
-    saveImageToFile(canvas, frontImagePath);
-    clearCanvas(ctx, canvas);
-
-    // Generar la imagen del lado trasero
-    await drawCardSide1(ctx, canvas, cardData, cardData.backSide, "back");
-    const backImagePath = path.join(
-      __dirname,
-      `../images/${cardData._id}_back.png`
-    );
-    saveImageToFile(canvas, backImagePath);
-
-    return {
-      frontImageUrl: `/images/${cardData._id}_front.png`,
-      backImageUrl: `/images/${cardData._id}_back.png`,
-    };
-  } catch (error) {
-    console.error("Error en generateCardImageUpdate:", error);
     if (error instanceof Error) {
       throw new Error(
         `Error al generar la imagen de la carta: ${error.message}`

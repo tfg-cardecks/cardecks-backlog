@@ -10,6 +10,7 @@ import {
 import { User } from "../models/user";
 import { CustomRequest } from "../interfaces/customRequest";
 import { generateCardImage } from "../utils/generateCardImage";
+import { editCardImage } from "../utils/editCardImage";
 import { v4 as uuidv4 } from "uuid";
 
 export const getCards = async (_req: Request, res: Response) => {
@@ -88,11 +89,51 @@ export const updateCard = async (req: Request, res: Response) => {
     const cardData = req.body;
     validateCardData(cardData);
 
-    const card = await Card.findByIdAndUpdate(req.params.id, cardData, {
+    // Obtener la carta existente
+    const existingCard = await Card.findById(req.params.id);
+    if (!existingCard) return res.status(404).json({ message: "Carta no encontrada" });
+
+    // Asegúrate de que cardData tenga el campo _id
+    cardData._id = existingCard._id;
+
+    // Comparar los datos para determinar si se ha modificado alguna parte
+    const frontSideModified = JSON.stringify(existingCard.frontSide) !== JSON.stringify(cardData.frontSide);
+    const backSideModified = JSON.stringify(existingCard.backSide) !== JSON.stringify(cardData.backSide);
+
+    // Generar un sufijo único para los nombres de las imágenes
+    const suffix = Date.now().toString();
+
+    // Generar nuevas imágenes si se ha modificado alguna parte
+    if (frontSideModified || backSideModified) {
+      try {
+        const { frontImageUrl, backImageUrl } = await editCardImage(cardData, suffix);
+        if (frontSideModified) {
+          cardData.frontImageUrl = frontImageUrl;
+        }
+        if (backSideModified) {
+          cardData.backImageUrl = backImageUrl;
+        }
+      } catch (imageError) {
+        console.error("Error al generar la imagen de la carta:", imageError);
+        const errorMessage = imageError instanceof Error ? imageError.message : "Error desconocido";
+        return res.status(500).json({ message: `Error al generar la imagen de la carta: ${errorMessage}` });
+      }
+    }
+
+    // Actualizar solo los campos que han cambiado
+    const updatedCardData = {
+      ...existingCard.toObject(),
+      ...cardData,
+    };
+
+    // Actualizar la carta en la base de datos
+    const updatedCard = await Card.findByIdAndUpdate(req.params.id, updatedCardData, {
+      new: true, // Esto asegura que se devuelva el documento actualizado
       runValidators: true,
     });
-    if (!card) return res.status(404).json({ message: "Carta no encontrada" });
-    return res.status(200).json(card);
+
+    if (!updatedCard) return res.status(404).json({ message: "Carta no encontrada" });
+    return res.status(200).json(updatedCard);
   } catch (error: any) {
     handleSpecificValidationErrors(error, res);
   }
