@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "build": "npx tsc",
-    "start": "node build/index.js",
+    "start": "node build/src/index.js",
     "dev": "set NODE_ENV=development && nodemon src/index.ts",
-    "test": "set NODE_ENV=test&& jest --config jest.config.cts --detectOpenHandles --forceExit --errorOnDeprecated --coverage --reporters='default'"
+    "test": "set NODE_ENV=test&& jest --config jest.config.cjs --detectOpenHandles --forceExit --errorOnDeprecated --coverage --reporters='default'"
   },
   "keywords": [],
   "author": "",
