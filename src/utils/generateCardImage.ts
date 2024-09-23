@@ -147,7 +147,6 @@ export const generateCardImageUpdate = async (cardData: any) => {
   try {
     validateCardData(cardData);
 
-    // Verifica que cardData._id esté definido
     if (!cardData._id) {
       throw new Error("El campo _id no está definido en cardData");
     }
@@ -157,7 +156,6 @@ export const generateCardImageUpdate = async (cardData: any) => {
     const canvas = createCardCanvas(cardWidth, cardHeight);
     const ctx = canvas.getContext("2d");
 
-    // Generar la imagen del lado delantero
     await drawCardSide1(ctx, canvas, cardData, cardData.frontSide, "front");
     const frontImagePath = path.join(
       __dirname,
@@ -166,7 +164,6 @@ export const generateCardImageUpdate = async (cardData: any) => {
     saveImageToFile(canvas, frontImagePath);
     clearCanvas(ctx, canvas);
 
-    // Generar la imagen del lado trasero
     await drawCardSide1(ctx, canvas, cardData, cardData.backSide, "back");
     const backImagePath = path.join(
       __dirname,

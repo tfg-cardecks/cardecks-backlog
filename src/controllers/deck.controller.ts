@@ -128,22 +128,36 @@ export const updateDeck = async (req: CustomRequest, res: Response) => {
     if (!userId)
       return res.status(401).json({ message: "Usuario no autenticado" });
 
-    const deck = await Deck.findById(req.params.id);
-    if (!deck) return res.status(404).json({ message: "Mazo no encontrado" });
+    const existingDeck = await Deck.findById(req.params.id);
+    if (!existingDeck) return res.status(404).json({ message: "Mazo no encontrado" });
 
-    const { theme, description, cards } = req.body;
+    const deckData = req.body;
+    const { name, theme, description, cards } = deckData;
 
-    if (theme) deck.theme = theme;
-    if (description) deck.description = description;
+    if (theme) existingDeck.theme = theme;
+    if (description) existingDeck.description = description;
+    if (name) existingDeck.name = name;
 
     if (Array.isArray(cards)) {
       const cardIds = await validateAndFindCards(cards, res);
       if (!cardIds) return;
-      deck.cards = cardIds;
+      existingDeck.cards = cardIds;
     }
 
-    await deck.save();
-    return res.status(200).json(deck);
+    const updatedDeckData = {
+      ...existingDeck.toObject(),
+      ...deckData,
+    };
+
+    const updatedDeck = await Deck.findByIdAndUpdate(
+      req.params.id,
+      updatedDeckData,
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedDeck) return res.status(404).json({ message: "Mazo no encontrado" });
+
+    return res.status(200).json(updatedDeck);
   } catch (error: any) {
     handleValidationErrorsDeckUpdate(error, res);
   }
