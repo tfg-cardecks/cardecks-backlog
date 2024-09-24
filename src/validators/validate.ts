@@ -31,13 +31,18 @@ export function handleValidateEmail(email: string, res: Response) {
 }
 
 export function handleValidatePassword(password: string, res: Response) {
-  if (!/(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W)/.test(password))
+  if (password.length < 6) {
+    return res.status(400).json({
+      message: "La contraseña debe tener al menos 6 caracteres",
+    });
+  }
+  if (!/(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W)/.test(password)) {
     return res.status(400).json({
       message:
         "La contraseña debe tener al menos una letra minúscula, una letra mayúscula, un número y un carácter especial",
     });
+  }
 }
-
 export function handleValidationErrors(error: any, res: Response) {
   const keyError = error.message.split(":");
   console.log("keyError", keyError);
