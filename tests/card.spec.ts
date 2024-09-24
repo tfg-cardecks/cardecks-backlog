@@ -234,7 +234,7 @@ describe("Testing import card method", () => {
     );
   });
 
-  it("Can't import a cad (invalid data)", async () => {
+  it("Can't import a card (invalid data)", async () => {
     const response = await request(app)
       .post(`${API_BASE_URL}/card/import`)
       .set("Authorization", token)

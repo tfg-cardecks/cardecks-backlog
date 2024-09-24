@@ -107,7 +107,7 @@ export const editCardImage = async (cardData: any, suffix: string) => {
     console.error("Error en generateCardImage:", error);
     if (error instanceof Error) {
       throw new Error(
-        `Error al generar la imagen de la carta: ${error.message}`
+        `Tipo de imagen no soportado`
       );
     } else {
       throw new Error(
