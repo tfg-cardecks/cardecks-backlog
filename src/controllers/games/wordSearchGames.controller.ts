@@ -4,10 +4,10 @@ import { Response, Request } from "express";
 import { Game } from "../../models/game";
 import { WordSearchGame } from "../../models/games/wordSearchGame";
 import { User } from "../../models/user";
+import { Deck } from "../../models/deck";
 import { handleValidationErrors } from "../../validators/validate";
 import { CustomRequest } from "../../interfaces/customRequest";
 import { generateWordSearchGrid } from "../../utils/wordSearchGenerator";
-import { wordLists, Theme } from "../../utils/wordLists";
 
 export const getWordSearchGames = async (_req: Request, res: Response) => {
   try {
@@ -38,17 +38,18 @@ export const createWordSearchGame = async (
   res: Response
 ) => {
   try {
-    const theme: Theme = req.body.theme;
+    const { deckId } = req.body;
     const userId = req.user?.id;
 
-    if (!theme || !wordLists[theme])
-      return res.status(400).json({ message: "Tema inválido" });
+    if (!deckId)
+      return res.status(400).json({ message: "Mazo no proporcionado" });
 
     if (!userId)
       return res.status(401).json({ message: "Usuario no autenticado" });
 
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+    if (!user)
+      return res.status(404).json({ message: "Usuario no encontrado" });
 
     if (!user.gamesCompletedByType)
       user.gamesCompletedByType = new Map<string, number>();
@@ -56,11 +57,14 @@ export const createWordSearchGame = async (
     const gameType = "WordSearchGame";
     const currentCount = user.gamesCompletedByType.get(gameType) || 0;
 
-    if (currentCount >= 100) {
+    const maxGames = 100;
+
+    if (currentCount >= maxGames) {
       return res.status(400).json({
-        message: `Ya has completado 100 ${gameType}. Por favor, reinicia el contador para comenzar una nueva serie.`,
+        message: `Ya has completado ${maxGames} ${gameType}. Por favor, reinicia el contador para comenzar una nueva serie.`,
       });
     }
+
     let game = await Game.findOne({
       user: userId,
       gameType: gameType,
@@ -88,24 +92,37 @@ export const createWordSearchGame = async (
     user.games.push(game._id);
     await user.save();
 
-    const words = wordLists[theme];
+    const deck = await Deck.findById(deckId).populate("cards");
+    if (!deck) return res.status(404).json({ message: "Mazo no encontrado" });
+
+    const words = deck.cards
+      .flatMap((card: any) =>
+        card.frontSide.text.map((textObj: any) => textObj.content.toUpperCase())
+      )
+      .filter((text: string) => text.length <= 10);
+
+    if (words.length < 4)
+      return res.status(400).json({
+        message:
+          "El mazo no tiene suficientes palabras válidas para crear una nueva sopa de letras",
+      });
 
     const shuffledWords = words.sort(() => 0.5 - Math.random());
-    const selectedWords = shuffledWords.slice(0, 5);
+    const selectedWords = shuffledWords.slice(0, 4);
     const grid = generateWordSearchGrid(selectedWords, 10);
 
     const newWordSearchGame = new WordSearchGame({
       game: game._id,
       user: userId,
+      deck: deck._id,
       grid: grid,
       words: selectedWords,
-      theme: theme,
       status: "inProgress",
       timeTaken: 0,
       completed: false,
     });
     await newWordSearchGame.save();
-    
+
     return res
       .status(201)
       .json({ gameId: game._id, wordSearchGameId: newWordSearchGame._id });
@@ -143,26 +160,42 @@ export const completeCurrentGame = async (
     const gameType = "WordSearchGame";
     const currentCount = user.gamesCompletedByType.get(gameType) || 0;
 
-    if (currentCount >= 100)
+    const maxGames = 100;
+
+    if (currentCount >= maxGames)
       return res.status(200).json({
-        message: `¡Felicidades! Has completado 100 ${gameType}. Puedes comenzar una nueva serie si deseas jugar de nuevo.`,
+        message: `¡Felicidades! Has completado ${maxGames} ${gameType}. Puedes comenzar una nueva serie si deseas jugar de nuevo.`,
       });
     user.gamesCompletedByType.set(gameType, currentCount + 1);
     await user.save();
 
-    if (currentCount + 1 < 100) {
-      const theme: Theme = wordSearchGame.theme;
-      const words = wordLists[theme];
+    if (currentCount + 1 < maxGames) {
+      const deck = await Deck.findById(wordSearchGame.deck).populate("cards");
+      if (!deck) return res.status(404).json({ error: "Mazo no encontrado" });
+
+      const words = deck.cards
+        .flatMap((card: any) =>
+          card.frontSide.text.map((textObj: any) =>
+            textObj.content.toUpperCase()
+          )
+        )
+        .filter((text: string) => text.length <= 10);
+      if (words.length < 4)
+        return res.status(400).json({
+          error:
+            "El mazo no tiene suficientes palabras válidas para crear una nueva sopa de letras",
+        });
+
       const shuffledWords = words.sort(() => 0.5 - Math.random());
-      const selectedWords = shuffledWords.slice(0, 5);
+      const selectedWords = shuffledWords.slice(0, 4);
       const grid = generateWordSearchGrid(selectedWords, 10);
 
       const newWordSearchGame = new WordSearchGame({
         game: wordSearchGame.game,
         user: wordSearchGame.user,
+        deck: deck._id,
         grid: grid,
         words: selectedWords,
-        theme: theme,
         status: "inProgress",
         timeTaken: 0,
         completed: false,
@@ -174,7 +207,7 @@ export const completeCurrentGame = async (
       });
     } else {
       return res.status(200).json({
-        message: `Has alcanzado el límite de 100 ${gameType}. Puedes reiniciar el contador para comenzar de nuevo.`,
+        message: `Has alcanzado el límite de ${maxGames} ${gameType}. Puedes reiniciar el contador para comenzar de nuevo.`,
       });
     }
   } catch (error: any) {
@@ -214,11 +247,18 @@ export const resetGamesCompletedByType = async (
     const userId = req.user?.id;
     const { gameType } = req.body;
 
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
+    if (!userId) {
+      return res.status(401).json({ error: "Usuario no autenticado" });
+    }
 
-    if (!gameType)
+    if (!gameType) {
       return res.status(400).json({ error: "El tipo de juego es obligatorio" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
 
     user.gamesCompletedByType.set(gameType, 0);
     await user.save();
@@ -239,11 +279,22 @@ export const deleteWordSearchGame = async (
     const { wordSearchGameId } = req.params;
     const userId = req.user?.id;
 
+    if (!userId) {
+      return res.status(401).json({ error: "Usuario no autenticado" });
+    }
+
+    if (!wordSearchGameId) {
+      return res
+        .status(400)
+        .json({ error: "El ID del juego de sopa de letras es obligatorio" });
+    }
+
     const wordSearchGame = await WordSearchGame.findByIdAndDelete(
       wordSearchGameId
     );
-    if (!wordSearchGame)
+    if (!wordSearchGame) {
       return res.status(404).json({ error: "Sopa de letras no encontrada" });
+    }
 
     await Game.findByIdAndDelete(wordSearchGame.game);
 

@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 
 // local imports
 import { Game } from "../models/game";
+import { WordSearchGame } from "../models/games/wordSearchGame";
+import { User } from "../models/user"; 
 
 export const getGames = async (_req: Request, res: Response) => {
   try {
@@ -28,12 +30,19 @@ export const getGameById = async (req: Request, res: Response) => {
 export const deleteGame = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+
     const game = await Game.findByIdAndDelete(id);
     if (!game) {
       return res.status(404).json({ message: "Juego no encontrado" });
     }
-    return res.status(204).json({ message: "Juego eliminado" }); 
-    
+
+    if (game.gameType === "WordSearchGame") {
+      await WordSearchGame.deleteOne({ game: id });
+    }
+
+    await User.updateMany({ games: id }, { $pull: { games: id } });
+
+    return res.status(204).json({ message: "Juego eliminado" });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
   }

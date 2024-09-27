@@ -37,14 +37,20 @@ export const signup = async (req: Request, res: Response) => {
 };
 
 export const signin = async (req: Request, res: Response) => {
-  const userFound = await getUserByEmailOrUsername(
-    req.body.email,
-    req.body.username
-  );
-  if (!req.body.password)
+  const { emailOrUsername, password } = req.body;
+
+  if (!password)
     return res.status(400).json({ message: "La contraseña es obligatoria" });
-  if (!userFound) return res.status(404).json({ message: "Usuario no encontrado" });
-  if (await checkPassword(req.body.password, res, userFound)) return;
+
+  console.log(emailOrUsername);
+  const userFound = await getUserByEmailOrUsername(
+    emailOrUsername,
+    emailOrUsername
+  );
+  if (!userFound)
+    return res.status(404).json({ message: "Usuario no encontrado" });
+
+  if (await checkPassword(password, res, userFound)) return;
 
   const token = jwt.sign(
     { id: userFound._id, role: userFound.role, username: userFound.username },
@@ -54,12 +60,11 @@ export const signin = async (req: Request, res: Response) => {
       algorithm: "HS512",
     }
   );
-  return res
-    .status(200)
-    .json({
-      token: token,
-      role: userFound.role,
-      username: userFound.username,
-      id: userFound._id,
-    });
+
+  return res.status(200).json({
+    token: token,
+    role: userFound.role,
+    username: userFound.username,
+    id: userFound._id,
+  });
 };

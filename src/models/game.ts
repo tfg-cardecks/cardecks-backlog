@@ -20,6 +20,7 @@ const gameSchema = new Schema({
     enum: ["WordSearchGame"],
   },
   user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  
 });
 
 export const Game = mongoose.model("Game", gameSchema, "games");

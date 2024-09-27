@@ -12,6 +12,11 @@ const wordSearchGameSchema = new Schema({
     ref: "User",
     required: [true, "El usuario es obligatorio"],
   },
+  deck: {
+    type: Schema.Types.ObjectId,
+    ref: "Deck",
+    required: [true, "El mazo es obligatorio"],
+  },
   grid: {
     type: [[String]],
     required: [true, "La cuadrícula es obligatoria"],
@@ -32,11 +37,6 @@ const wordSearchGameSchema = new Schema({
   timeTaken: {
     type: Number,
     default: 0,
-  },
-  theme: {
-    type: String,
-    enum: ["Animals", "Colors"],
-    required: [true, "El tema es obligatorio"],
   },
   completed: { type: Boolean, default: false },
 });
