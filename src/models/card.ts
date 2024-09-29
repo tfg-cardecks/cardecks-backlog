@@ -33,7 +33,7 @@ const cardSchema = new Schema({
               return value.length <= 25;
             },
             message:
-              "El contenido del texto no debe exceder los 25 caracteres",
+              "El contenido del texto de la Parte Delantera no debe exceder los 25 caracteres",
           },
         },
         fontSize: { type: Number, default: 16 },
@@ -74,7 +74,7 @@ const cardSchema = new Schema({
               return value.length <= 103;
             },
             message:
-              "El contenido del texto no debe exceder los 103 caracteres",
+              "El contenido del texto de la Parte Trasera no debe exceder los 103 caracteres",
           },
         },
         fontSize: { type: Number, default: 16 },
