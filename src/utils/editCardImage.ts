@@ -7,12 +7,51 @@ const createCardCanvas = (width: number, height: number) => {
   return createCanvas(width, height);
 };
 
-const drawText = (ctx: any, textArray: any[]) => {
+const drawText = (ctx: any, textArray: any[], isBackSide: boolean) => {
   textArray.forEach((text) => {
     ctx.fillStyle = text.color || "#000000";
     ctx.font = `${text.fontSize || 16}px Arial`;
-    ctx.fillText(text.content, text.left, text.top);
+    const lines = wrapText(ctx, text.content, 250, isBackSide);
+    lines.forEach((line, index) => {
+      ctx.fillText(line, text.left, text.top + index * (text.fontSize || 16));
+    });
   });
+};
+
+const wrapText = (ctx: any, text: string, maxWidth: number, isBackSide: boolean) => {
+  const words = text.split(" ");
+  let lines = [];
+  let currentLine = words[0];
+
+  for (let i = 1; i < words.length; i++) {
+    let word = words[i];
+    const width = ctx.measureText(currentLine + " " + word).width;
+
+    if (width < maxWidth) {
+      currentLine += " " + word;
+    } else {
+      lines.push(currentLine);
+
+      if (isBackSide) {
+        while (ctx.measureText(word).width > maxWidth) {
+          let part = word.slice(0, Math.floor(word.length * maxWidth / ctx.measureText(word).width));
+          let partWidth = ctx.measureText(part).width;
+
+          while (partWidth > maxWidth) {
+            part = word.slice(0, part.length - 1);
+            partWidth = ctx.measureText(part).width;
+          }
+
+          lines.push(part);
+          word = word.slice(part.length);
+        }
+      }
+
+      currentLine = word;
+    }
+  }
+  lines.push(currentLine);
+  return lines;
 };
 
 const drawImages = async (ctx: any, imagesArray: any[]) => {
@@ -47,12 +86,12 @@ const drawCardSide = async (
 
   if (cardData.cardType === "txtImg") {
     if (side === "front") {
-      drawText(ctx, sideData.text);
+      drawText(ctx, sideData.text, false);
     } else if (side === "back") {
       await drawImages(ctx, sideData.images);
     }
   } else if (cardData.cardType === "txtTxt") {
-    drawText(ctx, sideData.text);
+    drawText(ctx, sideData.text, side === "back");
   }
 };
 
@@ -104,10 +143,10 @@ export const editCardImage = async (cardData: any, suffix: string) => {
       backImageUrl: `/images/${cardData._id}_${suffix}_back.png`,
     };
   } catch (error) {
-    console.error("Error en generateCardImage:", error);
+    console.error("Error en editCardImage:", error);
     if (error instanceof Error) {
       throw new Error(
-        `Tipo de imagen no soportado`
+        `Error al generar la imagen de la carta: ${error.message}`
       );
     } else {
       throw new Error(
