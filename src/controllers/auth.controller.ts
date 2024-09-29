@@ -41,8 +41,6 @@ export const signin = async (req: Request, res: Response) => {
 
   if (!password)
     return res.status(400).json({ message: "La contraseña es obligatoria" });
-
-  console.log(emailOrUsername);
   const userFound = await getUserByEmailOrUsername(
     emailOrUsername,
     emailOrUsername

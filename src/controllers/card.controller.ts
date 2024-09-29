@@ -56,7 +56,6 @@ export const createCard = async (req: CustomRequest, res: Response) => {
         (error: any) => error.message
       );
       const formattedErrorMessages = errorMessages.join("\n");
-      console.log(formattedErrorMessages);
       return res.status(400).json({ message: formattedErrorMessages });
     }
 

@@ -71,10 +71,10 @@ const cardSchema = new Schema({
           required: false,
           validate: {
             validator: function (value: string) {
-              return value.length <= 105;
+              return value.length <= 103;
             },
             message:
-              "El contenido del texto no debe exceder los 105 caracteres",
+              "El contenido del texto no debe exceder los 103 caracteres",
           },
         },
         fontSize: { type: Number, default: 16 },
