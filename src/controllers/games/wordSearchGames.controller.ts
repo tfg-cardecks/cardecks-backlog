@@ -110,7 +110,6 @@ export const createWordSearchGame = async (
     const shuffledWords = words.sort(() => 0.5 - Math.random());
     const selectedWords = shuffledWords.slice(0, 4);
     const grid = generateWordSearchGrid(selectedWords, 10);
-
     const newWordSearchGame = new WordSearchGame({
       game: game._id,
       user: userId,
@@ -161,7 +160,6 @@ export const completeCurrentGame = async (
     const currentCount = user.gamesCompletedByType.get(gameType) || 0;
 
     const maxGames = 100;
-
     if (currentCount >= maxGames)
       return res.status(200).json({
         message: `¡Felicidades! Has completado ${maxGames} ${gameType}. Puedes comenzar una nueva serie si deseas jugar de nuevo.`,

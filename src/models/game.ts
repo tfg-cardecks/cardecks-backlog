@@ -17,7 +17,7 @@ const gameSchema = new Schema({
   gameType: {
     type: String,
     required: [true, "El tipo de juego es obligatorio"],
-    enum: ["WordSearchGame"],
+    enum: ["WordSearchGame", "GuessTheWordGame", "GuessTheImageGame","GuessTheTextGame", "MemoryGame", "StrokeOrderGame", "MatchingGame", "HangmanGame", "SpeedMemoryWordGame", "SpeedMemoryImageGame"],
   },
   user: { type: Schema.Types.ObjectId, ref: "User", required: true },
   
