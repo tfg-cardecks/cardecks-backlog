@@ -6,7 +6,7 @@ export function generateWordSearchGrid(
     throw new Error("El tamaño de la cuadrícula debe ser al menos 1.");
   }
 
-  const cleanedWords = words.map(cleanWord).filter((word): word is string => word !== null);
+  const cleanedWords = words.map((word) => cleanWord(word)).filter((word): word is string => word !== null);
 
   const validWords = cleanedWords.filter(word => word.length <= gridSize);
   if (validWords.length < 4) {
