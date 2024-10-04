@@ -57,7 +57,7 @@ export const createWordSearchGame = async (
     const gameType = "WordSearchGame";
     const currentCount = user.gamesCompletedByType.get(gameType) || 0;
 
-    const maxGames = 10;
+    const maxGames = 25;
 
     if (currentCount >= maxGames) {
       return res.status(400).json({
@@ -150,14 +150,10 @@ export const completeCurrentGame = async (
   try {
     const { wordSearchGameId } = req.params;
     const userId = req.user?.id;
-    console.log('User ID:', userId);
-    console.log('Word Search Game ID:', wordSearchGameId);
-
     const wordSearchGame = await WordSearchGame.findById(wordSearchGameId);
     if (!wordSearchGame)
       return res.status(404).json({ error: "Sopa de letras no encontrada" });
 
-    console.log('Palabras encontradas en la solicitud:', req.body.foundWords);
     if (req.body.foundWords) wordSearchGame.foundWords = req.body.foundWords;
     const allWordsFound = wordSearchGame.words.every((word) =>
       wordSearchGame.foundWords.includes(word)
@@ -176,8 +172,7 @@ export const completeCurrentGame = async (
     const gameType = "WordSearchGame";
     const currentCount = user.gamesCompletedByType.get(gameType) || 0;
 
-    const maxGames = 10;
-    console.log('Conteo actual de juegos completados:', currentCount);
+    const maxGames = 25;
     if (currentCount >= maxGames)
       return res.status(200).json({
         message: `¡Felicidades! Has completado ${maxGames} ${gameType}. Puedes comenzar una nueva serie si deseas jugar de nuevo.`,
@@ -330,63 +325,5 @@ export const deleteWordSearchGame = async (
     return res.status(204).send();
   } catch (error: any) {
     handleValidationErrors(error, res);
-  }
-};
-
-export const isWordInWordSearch = (grid: string[][], word: string): boolean => {
-  const directions = [
-    [0, 1],
-    [1, 0], 
-    [1, 1], 
-    [1, -1], 
-    [0, -1], 
-    [-1, 0], 
-    [-1, 1], 
-    [-1, -1],
-  ];
-
-  const numRows = grid.length;
-  const numCols = grid[0].length;
-
-  const isValidPosition = (x: number, y: number) => x >= 0 && x < numRows && y >= 0 && y < numCols;
-
-  for (let row = 0; row < numRows; row++) {
-    for (let col = 0; col < numCols; col++) {
-      if (grid[row][col] === word[0]) {
-        for (const [dx, dy] of directions) {
-          let k, newRow = row, newCol = col;
-          for (k = 0; k < word.length; k++) {
-            if (!isValidPosition(newRow, newCol) || grid[newRow][newCol] !== word[k]) {
-              break;
-            }
-            newRow += dx;
-            newCol += dy;
-          }
-          if (k === word.length) {
-            return true;
-          }
-        }
-      }
-    }
-  }
-  return false;
-};
-
-export const checkWordInWordSearchGame = async (
-  req: CustomRequest,
-  res: Response
-) => {
-  try {
-    const { wordSearchGameId, word } = req.params;
-    const wordSearchGame = await WordSearchGame.findById(wordSearchGameId);
-    if (!wordSearchGame) {
-      return res.status(404).json({ message: "Sopa de letras no encontrada" });
-    }
-
-    const grid: string[][] = wordSearchGame.grid as unknown as string[][];
-    const isWordFound = isWordInWordSearch(grid, word.toUpperCase());
-    return res.status(200).json({ found: isWordFound });
-  } catch (error: any) {
-    return res.status(500).json({ message: error.message });
   }
 };

@@ -8,7 +8,6 @@ import {
   getWordSearchGames,
   deleteWordSearchGame,
   resetGamesCompletedByType,
-  checkWordInWordSearchGame,
 } from "../../controllers/games/wordSearchGames.controller";
 import { checkUserRol } from "../../middlewares/checkUserRole";
 
@@ -20,8 +19,5 @@ router.post("/currentWordSearchGame/:wordSearchGameId", checkUserRol, completeCu
 router.get("/wordSearchGame/:id", checkUserRol, getWordSearchGameById);
 router.delete("/wordSearchGame/:wordSearchGameId", checkUserRol, deleteWordSearchGame);
 router.patch("/resetGamesCompletedByType", checkUserRol, resetGamesCompletedByType);
-
-router.get('/wordSearchGames/:wordSearchGameId/checkWord/:word', checkWordInWordSearchGame);
-
 
 export default router;

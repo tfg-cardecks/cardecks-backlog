@@ -87,7 +87,6 @@ describe("Testing import card in deck method", () => {
   });
 });
 
-//Obtener mazos y mazo por id
 describe("Testing get decks method", () => {
   it("Can get all decks", async () => {
     const response = await request(app)
@@ -148,7 +147,7 @@ describe("Testing get decks method", () => {
     expect(response2.status).toBe(500);
   });
 });
-//Crear mazo
+
 describe("Testing create deck method", () => {
   badDecks.forEach((badDeck) => {
     it("Can't create a deck with invalid data", async () => {
@@ -161,7 +160,6 @@ describe("Testing create deck method", () => {
   });
 });
 
-//Actualizar mazo
 describe("Testing update deck method", () => {
   it("Can update a deck", async () => {
     const updatedDeck = { ...deck, name: "Updated Name" };
@@ -187,7 +185,7 @@ describe("Testing update deck method", () => {
     expect(response.status).toBe(400);
   });
 });
-//Eliminar mazo
+
 describe("Testing delete deck method", () => {
   it("Can delete a deck", async () => {
     const response = await request(app)
@@ -203,7 +201,7 @@ describe("Testing delete deck method", () => {
     expect(response.status).toBe(500);
   });
 });
-//Obtener mazos por id de usuario
+
 describe("Testing get decks by user id method", () => {
   it("Can get decks by user id", async () => {
     const response = await request(app)
@@ -219,7 +217,7 @@ describe("Testing get decks by user id method", () => {
     expect(response.status).toBe(500);
   });
 });
-//Exportar deck
+
 describe("Testing export deck method", () => {
   it("Can't get an specific deck (deck not found)", async () => {
     const response = await request(app)
@@ -259,7 +257,7 @@ describe("Testing export deck method", () => {
     expect(response.status).toBe(500);
   });
 });
-//Importar deck
+
 describe("Testing import deck method", () => {
   it("Can't import a deck (misssing file input)", async () => {
     const response = await request(app)
@@ -301,7 +299,7 @@ describe("Testing import deck method", () => {
     expect(response.status).toBe(201);
   });
 });
-//Pruebas de Autorización
+
 describe("Testing authorization for deck methods", () => {
   it("Can't create a deck without token", async () => {
     const response = await request(app)
