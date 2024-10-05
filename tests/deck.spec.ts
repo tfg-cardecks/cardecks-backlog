@@ -6,7 +6,7 @@ import app from "../src/app";
 import { API_BASE_URL, AUTH_BASE_URL } from "./utils/constants";
 import { user } from "./utils/newUser";
 import { badDecks, deck, deck2 } from "./utils/newDeck";
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 before;
 after;
@@ -51,7 +51,7 @@ describe("Testing import card in deck method", () => {
   });
 
   it("Can't import a card into a non-existent deck", async () => {
-    const nonExistentDeckId = new mongoose.Types.ObjectId(); 
+    const nonExistentDeckId = new mongoose.Types.ObjectId();
     const response = await request(app)
       .post(`${API_BASE_URL}/deck/${nonExistentDeckId}/importCard`)
       .set("Authorization", token)
@@ -65,7 +65,9 @@ describe("Testing import card in deck method", () => {
       .post(`${API_BASE_URL}/deck/${id}/importCard`)
       .set("Authorization", token);
     expect(response.status).toBe(400);
-    expect(response.body.message).toBe("No se ha proporcionado ningún archivo.");
+    expect(response.body.message).toBe(
+      "No se ha proporcionado ningún archivo."
+    );
   });
 
   it("Can't import a card with invalid JSON", async () => {
@@ -74,7 +76,9 @@ describe("Testing import card in deck method", () => {
       .set("Authorization", token)
       .attach("file", "tests/utils/invalidCard.json");
     expect(response.status).toBe(400);
-    expect(response.body.message).toBe("El archivo proporcionado no es un JSON válido.");
+    expect(response.body.message).toBe(
+      "El archivo proporcionado no es un JSON válido."
+    );
   });
 
   it("Can't import a card with invalid card data", async () => {
@@ -142,6 +146,12 @@ describe("Testing get decks method", () => {
   
   it("Can't get an specific deck (deck not found)", async () => {
     const response2 = await request(app)
+      .get(`${API_BASE_URL}/deck/66fbe37b9d600a318c38ab12`)
+      .set("Authorization", token);
+    expect(response2.status).toBe(404);
+  });
+  it("Can't get an specific deck (error)", async () => {
+    const response2 = await request(app)
       .get(`${API_BASE_URL}/deck/invalidId`)
       .set("Authorization", token);
     expect(response2.status).toBe(500);
@@ -169,14 +179,14 @@ describe("Testing update deck method", () => {
       .send(updatedDeck);
     expect(response.status).toBe(200);
   });
-  
-   it("Can't update a deck with invalid data", async () => {
-     const response = await request(app)
-       .patch(`${API_BASE_URL}/deck/${id}`)
-       .set("Authorization", token)
-       .send({ name: "" });
-     expect(response.status).toBe(400);
-   });
+
+  it("Can't update a deck with invalid data", async () => {
+    const response = await request(app)
+      .patch(`${API_BASE_URL}/deck/${id}`)
+      .set("Authorization", token)
+      .send({ name: "" });
+    expect(response.status).toBe(400);
+  });
   it("Can't update a deck with invalid id", async () => {
     const response = await request(app)
       .patch(`${API_BASE_URL}/deck/invalidId`)
@@ -306,7 +316,9 @@ describe("Testing authorization for deck methods", () => {
       .post(`${API_BASE_URL}/decks`)
       .send(deck);
     expect(response.status).toBe(401);
-    expect(response.body.error).toBe("Debes iniciar sesión para usar esta función");
+    expect(response.body.error).toBe(
+      "Debes iniciar sesión para usar esta función"
+    );
   });
 
   it("Can't update a deck without token", async () => {
@@ -314,13 +326,16 @@ describe("Testing authorization for deck methods", () => {
       .patch(`${API_BASE_URL}/deck/${id}`)
       .send({ name: "Updated Name" });
     expect(response.status).toBe(401);
-    expect(response.body.error).toBe("Debes iniciar sesión para usar esta función");
+    expect(response.body.error).toBe(
+      "Debes iniciar sesión para usar esta función"
+    );
   });
 
   it("Can't delete a deck without token", async () => {
-    const response = await request(app)
-      .delete(`${API_BASE_URL}/deck/${id}`);
+    const response = await request(app).delete(`${API_BASE_URL}/deck/${id}`);
     expect(response.status).toBe(401);
-    expect(response.body.error).toBe("Debes iniciar sesión para usar esta función");
+    expect(response.body.error).toBe(
+      "Debes iniciar sesión para usar esta función"
+    );
   });
 });

@@ -4,13 +4,13 @@
   "theme": "Deck Theme 3",
   "cards": [
     {
-      "title": "Card Title 8",
-      "theme": "Card Theme 8",
+      "title": "Card Title 21",
+      "theme": "Card Theme 21",
       "cardType": "txtTxt",
       "frontSide": {
         "text": [
           {
-            "content": "Texto de ejemplo"
+            "content": "Texto"
           }
         ]
       },
@@ -23,13 +23,13 @@
       }
     },
     {
-      "title": "Card Title 9",
-      "theme": "Card Theme 9",
+      "title": "Card Title 22",
+      "theme": "Card Theme 22",
       "cardType": "txtTxt",
       "frontSide": {
         "text": [
           {
-            "content": "Texto de ejemplo"
+            "content": "Texto"
           }
         ]
       },
@@ -42,13 +42,51 @@
       }
     },
     {
-      "title": "Card Title 10",
-      "theme": "Card Theme 10",
+      "title": "Card Title 23",
+      "theme": "Card Theme 23",
       "cardType": "txtTxt",
       "frontSide": {
         "text": [
           {
-            "content": "Texto de ejemplo"
+            "content": "Texto"
+          }
+        ]
+      },
+      "backSide": {
+        "text": [
+          {
+            "content": "Texto de ejemplo en la parte trasera 3"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Card Title 24",
+      "theme": "Card Theme 24",
+      "cardType": "txtTxt",
+      "frontSide": {
+        "text": [
+          {
+            "content": "Texto"
+          }
+        ]
+      },
+      "backSide": {
+        "text": [
+          {
+            "content": "Texto de ejemplo en la parte trasera 3"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Card Title 25",
+      "theme": "Card Theme 25",
+      "cardType": "txtTxt",
+      "frontSide": {
+        "text": [
+          {
+            "content": "Texto"
           }
         ]
       },

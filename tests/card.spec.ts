@@ -95,6 +95,13 @@ describe("Testing get cards method", () => {
 
   it("Can't get an specific card (card not found)", async () => {
     const response2 = await request(app)
+      .get(`${API_BASE_URL}/card/66fbe37b9d600a318c38ab12`)
+      .set("Authorization", token);
+    expect(response2.status).toBe(404);
+  });
+
+  it("Can't get an specific card (error)", async () => {
+    const response2 = await request(app)
       .get(`${API_BASE_URL}/card/invalidId`)
       .set("Authorization", token);
     expect(response2.status).toBe(500);

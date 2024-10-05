@@ -70,7 +70,6 @@ beforeAll(async () => {
     .send(validCard5DeckForWordSearchGame);
   cardId5 = responseCard5.body._id;
 
-  // Crear un mazo de prueba
   const responseDeck = await request(app)
     .post(`${API_BASE_URL}/decks`)
     .set("Authorization", token)
@@ -81,7 +80,6 @@ beforeAll(async () => {
 
   deckId = responseDeck.body._id;
 
-  // Crear un juego de sopa de letras válido
   const response2 = await request(app)
     .post(`${API_BASE_URL}/wordSearchGames`)
     .set("Authorization", token)
@@ -91,103 +89,61 @@ beforeAll(async () => {
   gameId = response2.body.gameId;
 });
 
-describe("WordSearchGame API", () => {
-  it("should get all word search games", async () => {
+describe("Game API", () => {
+  it("Can get all games", async () => {
     const response = await request(app)
-      .get(`${API_BASE_URL}/wordSearchGames`)
+      .get(`${API_BASE_URL}/games`)
       .set("Authorization", token);
+
     expect(response.status).toBe(200);
     expect(response.body).toBeInstanceOf(Array);
   });
 
-  it("should return a message indicating a word search game is already in progress", async () => {
+  it("Can get an specific game", async () => {
     const response = await request(app)
-      .post(`${API_BASE_URL}/wordSearchGames`)
-      .set("Authorization", token)
-      .send({ deckId });
+      .get(`${API_BASE_URL}/game/${gameId}`)
+      .set("Authorization", token);
 
     expect(response.status).toBe(200);
-    expect(response.body.message).toBe(
-      "Ya tienes una sopa de letras en progreso"
-    );
+    expect(response.body).toHaveProperty("_id", gameId);
   });
 
-  it("should get a word search game by ID", async () => {
+  it("Can't get an specific game (game not found)", async () => {
     const response = await request(app)
-      .get(`${API_BASE_URL}/wordSearchGame/${wordSearchGameId}`)
+      .get(`${API_BASE_URL}/game/66fbe37b9d600a318c38ab12`)
       .set("Authorization", token);
-    expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty("_id", wordSearchGameId);
-  });
 
-  it("should return 404 for a non-existent word search game ID", async () => {
-    const response = await request(app)
-      .get(`${API_BASE_URL}/wordSearchGame/66fbe37b9d600a318c38ab12`)
-      .set("Authorization", token);
     expect(response.status).toBe(404);
   });
 
-  it("should return 500 for an invalid word search game ID", async () => {
+  it("Can't get an specific deck (error)", async () => {
     const response = await request(app)
-      .get(`${API_BASE_URL}/wordSearchGame/invalidId`)
+      .get(`${API_BASE_URL}/game/invalidId`)
       .set("Authorization", token);
     expect(response.status).toBe(500);
   });
-
-  it("should complete a word search game with all words found", async () => {
+ 
+  it("should delete a game by ID", async () => {
     const response = await request(app)
-      .post(`${API_BASE_URL}/currentWordSearchGame/${wordSearchGameId}`)
-      .set("Authorization", token)
-      .send({ foundWords: ["TEXTO", "TEXTO", "TEXTO", "TEXTO"] }); // Asegúrate de que estas palabras coincidan con las palabras esperadas
-
-    expect(response.status).toBe(201);
-    expect(response.body).toHaveProperty("gameId");
-    expect(response.body).toHaveProperty("wordSearchGameId");
-  });
-
-  it("should return an error when not all words are found", async () => {
-    const response = await request(app)
-      .post(`${API_BASE_URL}/currentWordSearchGame/${wordSearchGameId}`)
-      .set("Authorization", token)
-      .send({ foundWords: ["WORD1", "WORD2"] });
-
-    expect(response.status).toBe(400);
-    expect(response.body.error).toBe(
-      "Todas las palabras deben ser encontradas o el usuario debe elegir terminar el juego antes de completarlo"
-    );
-  });
-
-  it("should force complete a word search game", async () => {
-    const response = await request(app)
-      .post(`${API_BASE_URL}/currentWordSearchGame/${wordSearchGameId}`)
-      .set("Authorization", token)
-      .send({ foundWords: ["WORD1", "WORD2"], forceComplete: true });
-
-    expect(response.status).toBe(200);
-    expect(response.body.message).toBe("Juego completado forzosamente");
-  });
-
-  it("should delete a word search game by ID", async () => {
-    const response = await request(app)
-      .delete(`${API_BASE_URL}/wordSearchGame/${wordSearchGameId}`)
+      .delete(`${API_BASE_URL}/game/${gameId}`)
       .set("Authorization", token);
+
     expect(response.status).toBe(204);
   });
 
-  it("should return 404 when deleting a non-existent word search game ID", async () => {
+  it("should return 404 when deleting a non-existent game ID", async () => {
     const response = await request(app)
-      .delete(`${API_BASE_URL}/wordSearchGame/66fbe37b9d600a318c38ab12`)
+      .delete(`${API_BASE_URL}/game/66fbe37b9d600a318c38ab12`)
       .set("Authorization", token);
+
     expect(response.status).toBe(404);
   });
 
-  it("should reset games completed by type", async () => {
+  it("should return 404 when deleting a non-existent game ID", async () => {
     const response = await request(app)
-      .patch(`${API_BASE_URL}/resetGamesCompletedByType`)
-      .set("Authorization", token)
-      .send({ gameType: "WordSearchGame" });
+      .delete(`${API_BASE_URL}/game/nonexistentId`)
+      .set("Authorization", token);
 
-    expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty("message");
+    expect(response.status).toBe(500);
   });
 });
