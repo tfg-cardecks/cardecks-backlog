@@ -20,7 +20,7 @@ beforeAll(async () => {
 
   const response = await request(app)
     .post(`${AUTH_BASE_URL}/signin`)
-    .send({ username: user.username, password: user.password });
+    .send({ emailOrUsername: user.username, password: user.password });
 
   token = response.body.token;
   userId = response.body.id;
@@ -73,7 +73,7 @@ describe("Testing get cards method", () => {
     };
     await request(app).post(`${AUTH_BASE_URL}/signup`).send(anonymousUser);
     const response = await request(app).post(`${AUTH_BASE_URL}/signin`).send({
-      username: anonymousUser.username,
+      emailOrUsername: anonymousUser.username,
       password: anonymousUser.password,
     });
 

@@ -5,7 +5,7 @@ export const card = {
   frontSide: {
     text: [
       {
-        content: "Texto de ejemplo en la parte delantera",
+        content: "Texto de ejemplo",
       },
     ],
   },
@@ -25,7 +25,7 @@ export const card2 = {
   frontSide: {
     text: [
       {
-        content: "Texto de ejemplo en la parte delantera",
+        content: "Texto de ejemplo",
       },
     ],
   },

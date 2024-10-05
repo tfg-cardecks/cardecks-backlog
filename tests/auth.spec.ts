@@ -31,7 +31,7 @@ describe("Testing login method", () => {
   it("Can login one user", async () => {
     const response = await request(app)
       .post(`${AUTH_BASE_URL}/signin`)
-      .send({ username: user.username, password: user.password });
+      .send({ emailOrUsername: user.username, password: user.password });
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("token");
     expect(response.body).toHaveProperty("role");
@@ -42,7 +42,7 @@ describe("Testing login method", () => {
   it("Cannot login with wrong password", async () => {
     const response = await request(app)
       .post(`${AUTH_BASE_URL}/signin`)
-      .send({ email: user.email, password: "wrongPassword" });
+      .send({ emailOrUsername: user.email, password: "wrongPassword" });
     expect(response.status).toBe(401);
     expect(response.body.message).toBe("Contraseña inválida");
   });
@@ -50,7 +50,7 @@ describe("Testing login method", () => {
   it("Cannot login with wrong email", async () => {
     const response = await request(app)
       .post(`${AUTH_BASE_URL}/signin`)
-      .send({ email: "wrongEmail", password: user.password });
+      .send({ emailOrUsername: "wrongEmail", password: user.password });
     expect(response.status).toBe(404);
     expect(response.body.message).toBe("Usuario no encontrado");
   });
