@@ -32,7 +32,6 @@ let cardId5: string;
 beforeAll(async () => {
   await request(app).post(`${AUTH_BASE_URL}/signup`).send(user);
 
-  // Crear un usuario y obtener un token de autenticación
   const response = await request(app)
     .post(`${AUTH_BASE_URL}/signin`)
     .send({ emailOrUsername: user.username, password: user.password });

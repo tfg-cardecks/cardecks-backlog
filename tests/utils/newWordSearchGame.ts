@@ -33,15 +33,13 @@ export const invalidWordSearchGames = [
     game: "66fdc22fedf080aa5810c6c1",
     user: "66fbdb519d600a318c38aa6c",
     deck: "66fbe3299d600a318c38aaed",
-    grid: "not an array", // Se espera un array, pero se proporciona una cadena
-    words: "not an array", // Se espera un array, pero se proporciona una cadena
-    status: 123, // Se espera una cadena, pero se proporciona un número
-    foundWords: "not an array", // Se espera un array, pero se proporciona una cadena
-    timeTaken: "zero", // Se espera un número, pero se proporciona una cadena
-    completed: "yes", // Se espera un booleano, pero se proporciona una cadena
-    __v: "one", // Se espera un número, pero se proporciona una cadena
+    grid: "not an array", 
+    words: "not an array",
+    status: 123, 
+    foundWords: "not an array",
+    timeTaken: "zero", 
+    completed: "yes", 
   },
-  // Valores fuera de los límites permitidos
   {
     game: "66fdc22fedf080aa5810c6c1",
     user: "66fbdb519d600a318c38aa6c",
@@ -61,7 +59,7 @@ export const invalidWordSearchGames = [
     words: ["WORD1", "WORD2", "WORD3", "WORD4"],
     status: "completed",
     foundWords: ["WORD1", "WORD2", "WORD3", "WORD4"],
-    timeTaken: -1, // Valor fuera de los límites permitidos
+    timeTaken: -1, 
     completed: true,
   },
 ];

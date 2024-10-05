@@ -32,7 +32,6 @@ let cardId5: string;
 beforeAll(async () => {
   await request(app).post(`${AUTH_BASE_URL}/signup`).send(user);
 
-  // Crear un usuario y obtener un token de autenticación
   const response = await request(app)
     .post(`${AUTH_BASE_URL}/signin`)
     .send({ emailOrUsername: user.username, password: user.password });
@@ -70,7 +69,6 @@ beforeAll(async () => {
     .send(validCard5DeckForWordSearchGame);
   cardId5 = responseCard5.body._id;
 
-  // Crear un mazo de prueba
   const responseDeck = await request(app)
     .post(`${API_BASE_URL}/decks`)
     .set("Authorization", token)
@@ -81,7 +79,6 @@ beforeAll(async () => {
 
   deckId = responseDeck.body._id;
 
-  // Crear un juego de sopa de letras válido
   const response2 = await request(app)
     .post(`${API_BASE_URL}/wordSearchGames`)
     .set("Authorization", token)
@@ -138,7 +135,7 @@ describe("WordSearchGame API", () => {
     const response = await request(app)
       .post(`${API_BASE_URL}/currentWordSearchGame/${wordSearchGameId}`)
       .set("Authorization", token)
-      .send({ foundWords: ["TEXTO", "TEXTO", "TEXTO", "TEXTO"] }); // Asegúrate de que estas palabras coincidan con las palabras esperadas
+      .send({ foundWords: ["TEXTO", "TEXTO", "TEXTO", "TEXTO"] });
 
     expect(response.status).toBe(201);
     expect(response.body).toHaveProperty("gameId");
