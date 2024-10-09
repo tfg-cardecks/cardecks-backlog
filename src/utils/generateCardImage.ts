@@ -143,7 +143,6 @@ export const generateCardImage = async (cardData: any) => {
       backImageUrl: `/images/${cardData.title}_back.png`,
     };
   } catch (error) {
-    console.error("Error en generateCardImage:", error);
     if (error instanceof Error) {
       throw new Error(
         `Error al generar la imagen de la carta: ${error.message}`

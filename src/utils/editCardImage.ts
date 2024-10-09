@@ -143,7 +143,6 @@ export const editCardImage = async (cardData: any, suffix: string) => {
       backImageUrl: `/images/${cardData._id}_${suffix}_back.png`,
     };
   } catch (error) {
-    console.error("Error en editCardImage:", error);
     if (error instanceof Error) {
       throw new Error(
         `Error al generar la imagen de la carta: ${error.message}`

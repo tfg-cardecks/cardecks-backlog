@@ -64,7 +64,6 @@ export const createCard = async (req: CustomRequest, res: Response) => {
       card.frontImageUrl = frontImageUrl;
       card.backImageUrl = backImageUrl;
     } catch (imageError) {
-      console.error("Error al generar la imagen de la carta:", imageError);
       const errorMessage = imageError instanceof Error ? imageError.message : "Error desconocido";
       return res.status(500).json({ message: `Error al generar la imagen de la carta: ${errorMessage}` });
     }
@@ -108,7 +107,6 @@ export const updateCard = async (req: Request, res: Response) => {
           cardData.backImageUrl = backImageUrl;
         }
       } catch (imageError) {
-        console.error("Error al generar la imagen de la carta:", imageError);
         const errorMessage = imageError instanceof Error ? imageError.message : "Error desconocido";
         return res.status(500).json({ message: `Error al generar la imagen de la carta: ${errorMessage}` });
       }

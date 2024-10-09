@@ -221,7 +221,6 @@ export const completeCurrentGame = async (
       });
     }
   } catch (error: any) {
-    console.error('Error en el servidor:', error);
     handleValidationErrors(error, res);
   }
 };
