@@ -34,8 +34,8 @@ function cleanWord(word: string): string | null {
   const withoutAccents = withoutSpaces.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   const validWord = withoutAccents.replace(/[^A-Z]/gi, '');
 
-  if (/[^A-Z]/i.test(validWord)) {
-    throw new Error(`La palabra contiene caracteres no válidos: ${word}`);
+  if (!/^[A-Z]+$/i.test(validWord)) {
+    return null;
   }
 
   return validWord.length > 0 ? validWord.toUpperCase() : null;
