@@ -58,9 +58,10 @@ export const createCard = async (req: CustomRequest, res: Response) => {
       const formattedErrorMessages = errorMessages.join("\n");
       return res.status(400).json({ message: formattedErrorMessages });
     }
+    const suffix = Date.now().toString();
 
     try {
-      const { frontImageUrl, backImageUrl } = await generateCardImage(cardData);
+      const { frontImageUrl, backImageUrl } = await generateCardImage(cardData, suffix);
       card.frontImageUrl = frontImageUrl;
       card.backImageUrl = backImageUrl;
     } catch (imageError) {

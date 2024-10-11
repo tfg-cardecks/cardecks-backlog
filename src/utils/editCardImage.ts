@@ -126,7 +126,7 @@ export const editCardImage = async (cardData: any, suffix: string) => {
     await drawCardSide(ctx, canvas, cardData, cardData.frontSide, "front");
     const frontImagePath = path.join(
       __dirname,
-      `../images/${cardData._id}_${suffix}_front.png`
+      `../images/${cardData.title}_${suffix}_front.png`
     );
     saveImageToFile(canvas, frontImagePath);
     clearCanvas(ctx, canvas);
@@ -134,13 +134,13 @@ export const editCardImage = async (cardData: any, suffix: string) => {
     await drawCardSide(ctx, canvas, cardData, cardData.backSide, "back");
     const backImagePath = path.join(
       __dirname,
-      `../images/${cardData._id}_${suffix}_back.png`
+      `../images/${cardData.title}_${suffix}_back.png`
     );
     saveImageToFile(canvas, backImagePath);
 
     return {
-      frontImageUrl: `/images/${cardData._id}_${suffix}_front.png`,
-      backImageUrl: `/images/${cardData._id}_${suffix}_back.png`,
+      frontImageUrl: `/images/${cardData.title}_${suffix}_front.png`,
+      backImageUrl: `/images/${cardData.title}_${suffix}_back.png`,
     };
   } catch (error) {
     if (error instanceof Error) {

@@ -115,7 +115,7 @@ const saveImageToFile = (canvas: any, imagePath: string) => {
   fs.writeFileSync(imagePath, buffer);
 };
 
-export const generateCardImage = async (cardData: any) => {
+export const generateCardImage = async (cardData: any, suffix: string) => {
   try {
     validateCardData(cardData);
     const cardWidth = 300;
@@ -126,7 +126,7 @@ export const generateCardImage = async (cardData: any) => {
     await drawCardSide(ctx, canvas, cardData, cardData.frontSide, "front");
     const frontImagePath = path.join(
       __dirname,
-      `../images/${cardData.title}_front.png`
+      `../images/${cardData.title}_${suffix}_front.png`
     );
     saveImageToFile(canvas, frontImagePath);
     clearCanvas(ctx, canvas);
@@ -134,13 +134,13 @@ export const generateCardImage = async (cardData: any) => {
     await drawCardSide(ctx, canvas, cardData, cardData.backSide, "back");
     const backImagePath = path.join(
       __dirname,
-      `../images/${cardData.title}_back.png`
+      `../images/${cardData.title}_${suffix}_back.png`
     );
     saveImageToFile(canvas, backImagePath);
 
     return {
-      frontImageUrl: `/images/${cardData.title}_front.png`,
-      backImageUrl: `/images/${cardData.title}_back.png`,
+      frontImageUrl: `/images/${cardData.title}_${suffix}_front.png`,
+      backImageUrl: `/images/${cardData.title}_${suffix}_back.png`,
     };
   } catch (error) {
     if (error instanceof Error) {
