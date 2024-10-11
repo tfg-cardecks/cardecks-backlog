@@ -59,7 +59,11 @@ const drawImages = async (ctx: any, imagesArray: any[]) => {
     if (image.url) {
       try {
         const img = await loadImage(image.url);
-        ctx.drawImage(img, image.left, image.top, image.width, image.height);
+        const increasedWidth = image.width * 1.4;
+        const increasedHeight = image.height * 1.4;
+        const increasedLeft = image.left * 0.2;
+        const increasedTop = image.top * 0.6;
+        ctx.drawImage(img, increasedLeft, increasedTop, increasedWidth, increasedHeight);
       } catch (error) {
         console.error(`Error al cargar la imagen ${image.url}:`, error);
         throw error;
