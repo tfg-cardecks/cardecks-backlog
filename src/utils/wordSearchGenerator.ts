@@ -1,16 +1,23 @@
 export function generateWordSearchGrid(
   words: string[],
   gridSize: number = 10
-): string[][] {
+): { grid?: string[][], error?: string } {
   if (gridSize < 1) {
-    throw new Error("El tamaño de la cuadrícula debe ser al menos 1.");
+    return { error: "El tamaño de la cuadrícula debe ser al menos 1." };
   }
 
-  const cleanedWords = words.map((word) => cleanWord(word)).filter((word): word is string => word !== null);
-
-  const validWords = cleanedWords.filter(word => word.length <= gridSize);
+  const uniqueWords = Array.from(
+    new Set(words.map((word) => word.toUpperCase()))
+  );
+  const cleanedWords = uniqueWords
+    .map((word) => cleanWord(word))
+    .filter((word): word is string => word !== null);
+  const validWords = cleanedWords.filter((word) => word.length <= gridSize);
   if (validWords.length < 4) {
-    throw new Error("No hay suficientes palabras válidas para encajar en la cuadrícula.");
+    return {
+      error:
+        "No hay suficientes palabras válidas para encajar en la cuadrícula. por favor, añada cartas al mazo para poder crear un nuevo juego.",
+    };
   }
 
   const selectedWords = getRandomWords(validWords, 4);
@@ -20,19 +27,21 @@ export function generateWordSearchGrid(
 
   selectedWords.forEach((word) => {
     if (!placeWordInGrid(word, grid, gridSize, usedStartPositions)) {
-      throw new Error(`No se pudo colocar la palabra: ${word}`);
+      return { error: `No se pudo colocar la palabra: ${word}` };
     }
   });
 
   fillEmptyCells(grid, gridSize);
 
-  return grid;
+  return { grid };
 }
 
 function cleanWord(word: string): string | null {
-  const withoutSpaces = word.replace(/\s+/g, '');
-  const withoutAccents = withoutSpaces.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  const validWord = withoutAccents.replace(/[^A-Z]/gi, '');
+  const withoutSpaces = word.replace(/\s+/g, "");
+  const withoutAccents = withoutSpaces
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+  const validWord = withoutAccents.replace(/[^A-Z]/gi, "");
 
   if (!/^[A-Z]+$/i.test(validWord)) {
     return null;
@@ -58,12 +67,12 @@ function placeWordInGrid(
 ): boolean {
   const directions = [
     [0, 1],
-    [1, 0], 
-    [1, 1], 
-    [1, -1], 
-    [0, -1], 
+    [1, 0],
+    [1, 1],
+    [1, -1],
+    [0, -1],
     [-1, 0],
-    [-1, 1], 
+    [-1, 1],
     [-1, -1],
   ];
   let placed = false;
@@ -119,10 +128,7 @@ function canPlaceWordInGrid(
   for (let i = 0; i < word.length; i++) {
     const newRow = row + i * direction[0];
     const newCol = col + i * direction[1];
-    if (
-      grid[newRow][newCol] !== "" &&
-      grid[newRow][newCol] !== word[i]
-    ) {
+    if (grid[newRow][newCol] !== "" && grid[newRow][newCol] !== word[i]) {
       return false;
     }
   }

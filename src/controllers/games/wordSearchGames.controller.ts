@@ -89,17 +89,6 @@ export const createWordSearchGame = async (
       });
     }
 
-    game = new Game({
-      name: "Sopa de letras",
-      user: userId,
-      gameType: gameType,
-    });
-
-    await game.save();
-
-    user.games.push(game._id);
-    await user.save();
-
     const deck = await Deck.findById(deckId).populate("cards");
     if (!deck) return res.status(404).json({ message: "Mazo no encontrado" });
 
@@ -116,7 +105,24 @@ export const createWordSearchGame = async (
       });
 
     const selectedWords = getRandomWords(words, 4);
-    const grid = generateWordSearchGrid(selectedWords, 10);
+    const { grid, error } = generateWordSearchGrid(selectedWords, 10);
+
+    if (error) {
+      return res.status(400).json({ message: error });
+    }
+
+    game = new Game({
+      name: "Sopa de letras",
+      user: userId,
+      gameType: gameType,
+    });
+
+    await game.save();
+
+    user.games.push(game._id);
+    await user.save();
+
+
     const newWordSearchGame = new WordSearchGame({
       game: game._id,
       user: userId,
@@ -198,7 +204,11 @@ export const completeCurrentGame = async (
         });
 
       const selectedWords = getRandomWords(words, 4);
-      const grid = generateWordSearchGrid(selectedWords, 10);
+      const { grid, error } = generateWordSearchGrid(selectedWords, 10);
+
+      if (error) {
+        return res.status(400).json({ message: error });
+      }
 
       const newWordSearchGame = new WordSearchGame({
         game: wordSearchGame.game,
