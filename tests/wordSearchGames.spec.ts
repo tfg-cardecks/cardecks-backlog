@@ -140,7 +140,7 @@ describe("WordSearchGame API", () => {
     expect(response.status).toBe(201);
     expect(response.body).toHaveProperty("gameId");
     expect(response.body).toHaveProperty("wordSearchGameId");
-  });
+  }, 3000);
 
   it("should return an error when not all words are found", async () => {
     const response = await request(app)
