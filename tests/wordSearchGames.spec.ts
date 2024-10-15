@@ -135,7 +135,7 @@ describe("WordSearchGame API", () => {
     const response = await request(app)
       .post(`${API_BASE_URL}/currentWordSearchGame/${wordSearchGameId}`)
       .set("Authorization", token)
-      .send({ foundWords: ["TEXTO", "TEXTO", "TEXTO", "TEXTO"] });
+      .send({ foundWords: ["TEXTO1", "TEXTO2", "TEXTO3", "TEXTO4"] });
 
     expect(response.status).toBe(201);
     expect(response.body).toHaveProperty("gameId");

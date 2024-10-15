@@ -21,10 +21,6 @@ beforeAll(async () => {
   userId = response.body.id;
 });
 
-afterAll(async () => {
-  await mongoose.connection.close();
-});
-
 describe("User Routes", () => {
   it("should get all users", async () => {
     const response = await request(app)
@@ -48,7 +44,7 @@ describe("User Routes", () => {
       .get(`${API_BASE_URL}/user/${nonExistentUserId}`)
       .set("Authorization", token)
     expect(response.status).toBe(404);
-    expect(response.body.message).toBe("Usuario no encontrado");
+    expect(response.body.error).toBe("Usuario no encontrado");
   });
 
   it("should delete a user", async () => {

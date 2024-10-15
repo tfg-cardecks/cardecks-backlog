@@ -78,7 +78,7 @@ export const validCardDeckForWordSearchGame = {
   frontSide: {
     text: [
       {
-        content: "Texto",
+        content: "Texto1",
       },
     ],
   },
@@ -98,7 +98,7 @@ export const validCard2DeckForWordSearchGame = {
   frontSide: {
     text: [
       {
-        content: "Texto",
+        content: "Texto2",
       },
     ],
   },
@@ -118,7 +118,7 @@ export const validCard3DeckForWordSearchGame = {
   frontSide: {
     text: [
       {
-        content: "Texto",
+        content: "Texto3",
       },
     ],
   },
@@ -138,7 +138,7 @@ export const validCard4DeckForWordSearchGame = {
   frontSide: {
     text: [
       {
-        content: "Texto",
+        content: "Texto4",
       },
     ],
   },
@@ -158,7 +158,7 @@ export const validCard5DeckForWordSearchGame = {
   frontSide: {
     text: [
       {
-        content: "Texto",
+        content: "Texto5",
       },
     ],
   },
