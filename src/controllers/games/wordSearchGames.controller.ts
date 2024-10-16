@@ -98,7 +98,7 @@ export const createWordSearchGame = async (
       )
       .filter((text: string) => text.length <= 10);
 
-    if (words.length < 4)
+    if (words.length < 5)
       return res.status(400).json({
         message:
           "El mazo no tiene suficientes palabras válidas para crear una nueva sopa de letras",

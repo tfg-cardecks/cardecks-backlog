@@ -1,7 +1,7 @@
 export function generateWordSearchGrid(
   words: string[],
   gridSize: number = 10
-): { grid?: string[][], error?: string } {
+): { grid?: string[][]; error?: string } {
   if (gridSize < 1) {
     return { error: "El tamaño de la cuadrícula debe ser al menos 1." };
   }
@@ -9,14 +9,17 @@ export function generateWordSearchGrid(
   const uniqueWords = Array.from(
     new Set(words.map((word) => word.toUpperCase()))
   );
+  console.log(uniqueWords);
   const cleanedWords = uniqueWords
     .map((word) => cleanWord(word))
     .filter((word): word is string => word !== null);
+  console.log(cleanedWords);
   const validWords = cleanedWords.filter((word) => word.length <= gridSize);
+  console.log(validWords);
   if (validWords.length < 4) {
     return {
       error:
-        "No hay suficientes palabras válidas para encajar en la cuadrícula. por favor, añada cartas al mazo para poder crear un nuevo juego.",
+        "No hay suficientes palabras válidas para encajar en la cuadrícula. Por favor, añada cartas al mazo para poder crear un nuevo juego.",
     };
   }
 
@@ -43,7 +46,7 @@ function cleanWord(word: string): string | null {
     .replace(/[\u0300-\u036f]/g, "");
   const validWord = withoutAccents.replace(/[^A-Z]/gi, "");
 
-  if (!/^[A-Z]+$/i.test(validWord)) {
+  if (!/^[A-Z]+$/i.test(validWord) || validWord.length < 2) {
     return null;
   }
 
