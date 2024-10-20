@@ -7,18 +7,6 @@ import { Game } from "./game";
 
 const userSchema = new Schema({
   createAt: { type: Date, default: Date.now() },
-  name: {
-    type: String,
-    required: [true, "El nombre es obligatorio"],
-    maxlength: [50, "Nombre demasiado largo"],
-    minlength: [3, "Nombre demasiado corto"],
-  },
-  lastName: {
-    type: String,
-    required: [true, "El apellido es obligatorio"],
-    maxlength: [50, "Apellido demasiado largo"],
-    minlength: [3, "Apellido demasiado corto"],
-  },
   email: {
     type: String,
     required: [true, "El correo electrónico es obligatorio"],
