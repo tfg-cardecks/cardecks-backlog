@@ -61,7 +61,7 @@ export const createWordSearchGame = async (
 
     if (currentCount >= maxGames) {
       return res.status(400).json({
-        message: `Ya has completado ${maxGames} ${gameType}. Por favor, reinicia el contador para comenzar una nueva serie.`,
+        message: `Ya has completado ${maxGames} juegos de Sopa de Letras. Por favor, reinicia el contador para comenzar una nueva serie.`,
       });
     }
 
@@ -122,7 +122,6 @@ export const createWordSearchGame = async (
     user.games.push(game._id);
     await user.save();
 
-
     const newWordSearchGame = new WordSearchGame({
       game: game._id,
       user: userId,
@@ -174,16 +173,21 @@ export const completeCurrentGame = async (
     if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
     if (!user.gamesCompletedByType)
       user.gamesCompletedByType = new Map<string, number>();
+    if (!user.totalGamesCompletedByType)
+      user.totalGamesCompletedByType = new Map<string, number>();
 
     const gameType = "WordSearchGame";
     const currentCount = user.gamesCompletedByType.get(gameType) || 0;
+    const totalCount = user.totalGamesCompletedByType.get(gameType) || 0;
 
     const maxGames = 25;
     if (currentCount >= maxGames)
       return res.status(200).json({
         message: `¡Felicidades! Has completado ${maxGames} ${gameType}. Puedes comenzar una nueva serie si deseas jugar de nuevo.`,
       });
+
     user.gamesCompletedByType.set(gameType, currentCount + 1);
+    user.totalGamesCompletedByType.set(gameType, totalCount + 1);
     await user.save();
 
     if (currentCount + 1 < maxGames) {
@@ -227,7 +231,7 @@ export const completeCurrentGame = async (
       });
     } else {
       return res.status(200).json({
-        message: `Has alcanzado el límite de ${maxGames} ${gameType}. Puedes reiniciar el contador para comenzar de nuevo.`,
+        message: `Has alcanzado el límite de ${maxGames} juegos de Sopa de Letras. Puedes reiniciar el contador para comenzar de nuevo.`,
       });
     }
   } catch (error: any) {
@@ -284,7 +288,7 @@ export const resetGamesCompletedByType = async (
     await user.save();
 
     return res.status(200).json({
-      message: `El contador de juegos completados se ha reiniciado para ${gameType}. Puedes comenzar una nueva serie ahora.`,
+      message: `El contador de juegos completados se ha reiniciado para juegos de Sopa de Letras. Puedes comenzar una nueva serie ahora.`,
     });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });

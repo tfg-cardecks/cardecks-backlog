@@ -35,6 +35,12 @@ const userSchema = new Schema({
     of: Number,
     default: {},
   },
+  totalGamesCompletedByType: {
+    type: Map,
+    of: Number,
+    default: {},
+  },
+
   cards: [{ type: Schema.Types.ObjectId, ref: Card }],
   decks: [{ type: Schema.Types.ObjectId, ref: Deck }],
   games: [{ type: Schema.Types.ObjectId, ref: Game }],
