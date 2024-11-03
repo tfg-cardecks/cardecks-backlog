@@ -11,7 +11,6 @@ import {
   handleValidateUniqueUser,
 } from "../validators/validate";
 
-
 export const getUsers = async (_req: Request, res: Response) => {
   try {
     const users = await User.find();
@@ -76,15 +75,15 @@ export const updateUser = async (req: Request, res: Response) => {
     if (username && username !== user.username) updateData.username = username;
     if (email && email !== user.email) updateData.email = email;
 
-    // Validar unicidad del usuario
     if (updateData.username || updateData.email) {
       if (await handleValidateUniqueUser(updateData, res)) return;
     }
 
-    // Validar formato del correo electrónico
     if (updateData.email && handleValidateEmail(updateData.email, res)) return;
 
-    const updatedUser = await User.findOneAndUpdate({ _id: id }, updateData, { new: true });
+    const updatedUser = await User.findOneAndUpdate({ _id: id }, updateData, {
+      new: true,
+    });
     return res.status(200).json(updatedUser);
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
