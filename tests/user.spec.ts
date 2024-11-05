@@ -30,7 +30,7 @@ describe("User Routes", () => {
     expect(response.body).toBeInstanceOf(Array);
   });
 
-  it("should get a user by ID", async () => {
+  it("should get an user by ID", async () => {
     const response = await request(app)
       .get(`${API_BASE_URL}/user/${userId}`)
       .set("Authorization", token);
@@ -38,7 +38,7 @@ describe("User Routes", () => {
     expect(response.body).toHaveProperty("username", user.username);
   });
 
-  it("should edit a user by ID", async () => {
+  it("should edit an user by ID", async () => {
     const newUsername = "newUsername";
     const newEmail = "newemail@gmail.com";
     const response = await request(app)
@@ -50,7 +50,34 @@ describe("User Routes", () => {
     expect(response.body).toHaveProperty("email", newEmail);
   });
 
-  it("should not edit a user by ID", async () => {
+  it("should edit a password of a user by ID", async () => {
+    const currentPassword = user.password;
+    const newUserPassword = "NewPassword123!";
+    const response = await request(app)
+      .patch(`${API_BASE_URL}/user/${userId}/password`)
+      .set("Authorization", token)
+      .send({ currentPassword, newPassword: newUserPassword });
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty(
+      "message",
+      "Contraseña actualizada con éxito"
+    );
+  });
+
+  it("should not edit a password of a user by ID", async () => {
+    const newUserPassword = "NewPassword12333!";
+    const response = await request(app)
+      .patch(`${API_BASE_URL}/user/${userId}/password`)
+      .set("Authorization", token)
+      .send({ currentPassword: newUserPassword, newPassword: newUserPassword });
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty(
+      "message",
+      "Contraseña actual incorrecta"
+    );
+  });
+
+  it("should not edit an user by ID", async () => {
     const newUsername = "newUsername";
     const newEmail = "newemail@gm.com";
     const response = await request(app)

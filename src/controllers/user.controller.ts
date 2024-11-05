@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import bcrypt from "bcrypt";
 
 // local imports
 import { User } from "../models/user";
@@ -9,6 +10,7 @@ import { WordSearchGame } from "../models/games/wordSearchGame";
 import {
   handleValidateEmail,
   handleValidateUniqueUser,
+  handleValidatePassword,
 } from "../validators/validate";
 
 export const getUsers = async (_req: Request, res: Response) => {
@@ -56,11 +58,6 @@ export const deleteUser = async (req: Request, res: Response) => {
   }
 };
 
-// router.patch('/candidate/:id', checkUpdateCandidate, updateCandidate);//X
-// router.patch('/:id/password', checkUpdatePassword, updateUserPassword);
-// router.post('/forgot-password',checkRealUser,createChangePasswordRequest)
-// router.post('/forgot-password/:token',checkCorrectToken,checkRepeatedPassword,updateUserForgottenPassword);
-
 export const updateUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -90,59 +87,30 @@ export const updateUser = async (req: Request, res: Response) => {
   }
 };
 
-// export const updateUserPassword: any = async (req: Request, res: Response) => {
-// 	try {
-// 		const id = req.params.id
-// 		const { newPassword } = req.body
-// 		const data = await UserService.updateUserPassword(id, newPassword)
-// 		return ApiResponse.sendSuccess(res, data, 200, {
-// 			self: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
-// 		})
-// 	} catch (error: any) {
-// 		return ApiResponse.sendError(res, [
-// 			{
-// 				title: 'Internal Server Error',
-// 				detail: error.message,
-// 			},
-// 		])
-// 	}
-// }
+export const updateUserPassword = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { currentPassword, newPassword } = req.body;
 
-// export const updateUserForgottenPassword: any = async (req: Request, res: Response) => {
-// 	try {
-// 		const token = req.params.token
-// 		const { encryptedPassword } = req.body
-// 		const decodedToken=verifyJWT(token)
-// 		const data = await UserService.updateUserPassword(decodedToken.sub, encryptedPassword)
-// 		return ApiResponse.sendSuccess(res, data, 200, {
-// 			self: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
-// 		})
-// 	} catch (error: any) {
-// 		return ApiResponse.sendError(res, [
-// 			{
-// 				title: 'Internal Server Error',
-// 				detail: error.message,
-// 			},
-// 		])
-// 	}
-// }
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
 
-// export const createChangePasswordRequest: any = async (req: Request, res: Response) => {
-// 	try {
-// 		const url=req?.body?.redirectUrlBase
-// 		if(!url){
-// 			throw new Error('redirectUrlBase is required')
-// 		}
-// 		const data = await UserService.createChangePasswordRequest(req.body,url)
-// 		return ApiResponse.sendSuccess(res, data, 200, {
-// 			self: url,
-// 		})
-// 	} catch (error: any) {
-// 		return ApiResponse.sendError(res, [
-// 			{
-// 				title: 'Internal Server Error',
-// 				detail: error.message,
-// 			},
-// 		])
-// 	}
-// }
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Contraseña actual incorrecta" });
+    }
+    if (handleValidatePassword(newPassword, res)) return;
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    return res
+      .status(200)
+      .json({ message: "Contraseña actualizada con éxito" });
+  } catch (error: any) {
+    return res.status(500).json({ message: error.message });
+  }
+};
