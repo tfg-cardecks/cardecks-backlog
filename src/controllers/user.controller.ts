@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 // local imports
 import { User } from "../models/user";
@@ -12,6 +13,7 @@ import {
   handleValidateUniqueUser,
   handleValidatePassword,
 } from "../validators/validate";
+import { sendEmail } from "../utils/email";
 
 export const getUsers = async (_req: Request, res: Response) => {
   try {
@@ -110,6 +112,51 @@ export const updateUserPassword = async (req: Request, res: Response) => {
     return res
       .status(200)
       .json({ message: "Contraseña actualizada con éxito" });
+  } catch (error: any) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+
+export const requestPasswordReset = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    const token = jwt.sign({ id: user._id }, "secretKey", { expiresIn: "15m" });
+    const resetLink = `${req.protocol}://localhost:5173/reset-password/${token}`;
+    //cambiar la url de resetLink en el despliegue
+    //const resetLink = `https://xxxxx/reset-password/${token}`; xxxxx lo que me de el firebase
+
+    await sendEmail(user.email, "Restablecimiento de Contraseña", `Haz clic en el siguiente enlace para restablecer tu contraseña: ${resetLink}`);
+
+    return res.status(200).json({ message: "Correo de restablecimiento de contraseña enviado" });
+  } catch (error: any) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { token } = req.params;
+    const { newPassword } = req.body;
+
+    const decoded: any = jwt.verify(token, "secretKey");
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    if (handleValidatePassword(newPassword, res)) return;
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    return res.status(200).json({ message: "Contraseña actualizada con éxito" });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
   }
