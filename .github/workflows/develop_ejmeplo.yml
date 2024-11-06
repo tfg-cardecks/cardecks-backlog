@@ -27,6 +27,8 @@ jobs:
           echo "DB_STRING = '${{ secrets.DB_STRING }}'" >> .env
           echo "APP_NAME = '${{ secrets.APP_NAME }}'" >> .env
           echo "DB_NAME = '${{ secrets.DB_NAME }}'" >> .env
+          echo "EMAIL_USER = '${{ secrets.EMAIL_USER }}'" >> .env
+          echo "EMAIL_PASS = '${{ secrets.EMAIL_PASS }}'" >> .env
 
       - name: Install dependencies and build
         run: |
