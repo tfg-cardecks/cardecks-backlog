@@ -14,6 +14,7 @@ import {
   handleValidatePassword,
 } from "../validators/validate";
 import { sendEmail } from "../utils/email";
+import { link } from "fs";
 
 export const getUsers = async (_req: Request, res: Response) => {
   try {
@@ -133,7 +134,7 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
 
     await sendEmail(user.email, "Restablecimiento de Contraseña", `Haz clic en el siguiente enlace para restablecer tu contraseña: ${resetLink}`);
 
-    return res.status(200).json({ message: "Correo de restablecimiento de contraseña enviado" });
+    return res.status(200).json({ message: "Correo de restablecimiento de contraseña enviado",link: resetLink });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
   }
