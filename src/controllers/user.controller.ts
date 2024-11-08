@@ -14,7 +14,6 @@ import {
   handleValidatePassword,
 } from "../validators/validate";
 import { sendEmail } from "../utils/email";
-import { link } from "fs";
 
 export const getUsers = async (_req: Request, res: Response) => {
   try {
