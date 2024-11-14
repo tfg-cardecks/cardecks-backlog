@@ -130,7 +130,6 @@ export const createWordSearchGame = async (
       words: selectedWords,
       status: "inProgress",
       timeTaken: 0,
-      completed: false,
       foundWords: [],
     });
     await newWordSearchGame.save();
@@ -166,7 +165,6 @@ export const completeCurrentGame = async (
 
     if (!allWordsFound) return handleIncompleteGame(req, res, wordSearchGame);
     wordSearchGame.status = "completed";
-    wordSearchGame.completed = true;
     await wordSearchGame.save();
 
     const user = await User.findById(userId);
@@ -222,7 +220,6 @@ export const completeCurrentGame = async (
         words: selectedWords,
         status: "inProgress",
         timeTaken: 0,
-        completed: false,
       });
       await newWordSearchGame.save();
       return res.status(201).json({
@@ -259,7 +256,6 @@ const completeGamewordSearchGame = async (
   wordSearchGame: InstanceType<typeof WordSearchGame>
 ) => {
   wordSearchGame.status = "completed";
-  wordSearchGame.completed = true;
   await wordSearchGame.save();
 };
 

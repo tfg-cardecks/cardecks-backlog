@@ -9,13 +9,13 @@ export function generateWordSearchGrid(
   const uniqueWords = Array.from(
     new Set(words.map((word) => word.toUpperCase()))
   );
-  console.log(uniqueWords);
+
   const cleanedWords = uniqueWords
     .map((word) => cleanWord(word))
     .filter((word): word is string => word !== null);
-  console.log(cleanedWords);
+
   const validWords = cleanedWords.filter((word) => word.length <= gridSize);
-  console.log(validWords);
+
   if (validWords.length < 4) {
     return {
       error:

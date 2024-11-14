@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { Schema } from "mongoose";
 
-const wordSearchGameSchema = new Schema({
+const hangmanGameSchema = new Schema({
   game: {
     type: Schema.Types.ObjectId,
     ref: "Game",
@@ -17,10 +17,6 @@ const wordSearchGameSchema = new Schema({
     ref: "Deck",
     required: [true, "El mazo es obligatorio"],
   },
-  grid: {
-    type: [[String]],
-    required: [true, "La cuadrícula es obligatoria"],
-  },
   words: {
     type: [String],
     required: [true, "Las palabras son obligatorias"],
@@ -30,9 +26,25 @@ const wordSearchGameSchema = new Schema({
     default: "inProgress",
     enum: ["inProgress", "completed"],
   },
-  foundWords: {
+  foundLetters: {
     type: [String],
     default: [],
+  },
+  wrongLetters: {
+    type: [String],
+    default: [],
+  },
+  foundWord: {
+    type: String,
+    default: "",
+  },
+  currentWordIndex: {
+    type: Number,
+    default: 0,
+  },
+  currentWord: {
+    type: String,
+    default: "",
   },
   timeTaken: {
     type: Number,
@@ -40,8 +52,4 @@ const wordSearchGameSchema = new Schema({
   },
 });
 
-export const WordSearchGame = mongoose.model(
-  "WordSearchGame",
-  wordSearchGameSchema,
-  "wordSearchGames"
-);
+export const HangmanGame = mongoose.model("HangmanGame", hangmanGameSchema);

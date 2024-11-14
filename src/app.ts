@@ -11,6 +11,7 @@ import deckRoutes from "./routes/deck.routes";
 import gameRoutes from "./routes/game.routes";
 import wordSearchGameRoutes from "./routes/games/wordSearchGame.routes";
 import userRoutes from "./routes/user.routes";
+import hangmanGame from "./routes/games/hangmanGame.routes";
 
 const app: Express = express();
 
@@ -24,6 +25,7 @@ app.use("/api", deckRoutes);
 app.use("/api", gameRoutes);
 app.use("/api", wordSearchGameRoutes);
 app.use("/api", userRoutes);
+app.use("/api", hangmanGame);
 
 app.get("/", (_req: Request, res: Response) => {
   res.redirect("/api-docs/");
