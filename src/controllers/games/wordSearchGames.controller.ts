@@ -294,7 +294,7 @@ export const resetGamesCompletedByType = async (
     await user.save();
 
     return res.status(200).json({
-      message: `El contador de juegos completados se ha reiniciado para juegos de Sopa de Letras. Puedes comenzar una nueva serie ahora.`,
+      message: `El contador de juegos completados se ha reiniciado para juegos de ${gameType}. Puedes comenzar una nueva serie ahora.`,
     });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });

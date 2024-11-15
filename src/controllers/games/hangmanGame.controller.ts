@@ -328,38 +328,6 @@ const completeHangmanGame = async (
   await hangmanGame.save();
 };
 
-export const resetGamesCompletedByType = async (
-  req: CustomRequest,
-  res: Response
-) => {
-  try {
-    const userId = req.user?.id;
-    const { gameType } = req.body;
-
-    if (!userId) {
-      return res.status(401).json({ error: "Usuario no autenticado" });
-    }
-
-    if (!gameType) {
-      return res.status(400).json({ error: "El tipo de juego es obligatorio" });
-    }
-
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ error: "Usuario no encontrado" });
-    }
-
-    user.gamesCompletedByType.set(gameType, 0);
-    await user.save();
-
-    return res.status(200).json({
-      message: `El contador de juegos completados se ha reiniciado para juegos de ahorcado. Puedes comenzar una nueva serie ahora.`,
-    });
-  } catch (error: any) {
-    return res.status(500).json({ message: error.message });
-  }
-};
-
 export const deleteHangmanGame = async (req: CustomRequest, res: Response) => {
   try {
     const { hangmanGameId } = req.params;
