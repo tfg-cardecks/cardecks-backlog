@@ -155,20 +155,26 @@ export const completeCurrentGame = async (
     const { wordSearchGameId } = req.params;
     const userId = req.user?.id;
     const wordSearchGame = await WordSearchGame.findById(wordSearchGameId);
-    if (!wordSearchGame)
+    if (!wordSearchGame) {
       return res.status(404).json({ error: "Sopa de letras no encontrada" });
+    }
 
     if (req.body.foundWords) wordSearchGame.foundWords = req.body.foundWords;
     const allWordsFound = wordSearchGame.words.every((word) =>
       wordSearchGame.foundWords.includes(word)
     );
 
-    if (!allWordsFound) return handleIncompleteGame(req, res, wordSearchGame);
+    if (!allWordsFound) {
+      return handleIncompleteGame(req, res, wordSearchGame);
+    }
+
     wordSearchGame.status = "completed";
     await wordSearchGame.save();
 
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
+    if (!user) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
     if (!user.gamesCompletedByType)
       user.gamesCompletedByType = new Map<string, number>();
     if (!user.totalGamesCompletedByType)
@@ -179,10 +185,11 @@ export const completeCurrentGame = async (
     const totalCount = user.totalGamesCompletedByType.get(gameType) || 0;
 
     const maxGames = 25;
-    if (currentCount >= maxGames)
+    if (currentCount >= maxGames) {
       return res.status(200).json({
         message: `¡Felicidades! Has completado ${maxGames} ${gameType}. Puedes comenzar una nueva serie si deseas jugar de nuevo.`,
       });
+    }
 
     user.gamesCompletedByType.set(gameType, currentCount + 1);
     user.totalGamesCompletedByType.set(gameType, totalCount + 1);
@@ -190,7 +197,9 @@ export const completeCurrentGame = async (
 
     if (currentCount + 1 < maxGames) {
       const deck = await Deck.findById(wordSearchGame.deck).populate("cards");
-      if (!deck) return res.status(404).json({ error: "Mazo no encontrado" });
+      if (!deck) {
+        return res.status(404).json({ error: "Mazo no encontrado" });
+      }
 
       const words = deck.cards
         .flatMap((card: any) =>
@@ -199,11 +208,12 @@ export const completeCurrentGame = async (
           )
         )
         .filter((text: string) => text.length <= 10);
-      if (words.length < 4)
+      if (words.length < 4) {
         return res.status(400).json({
           error:
             "El mazo no tiene suficientes palabras válidas para crear una nueva sopa de letras",
         });
+      }
 
       const selectedWords = getRandomWords(words, 4);
       const { grid, error } = generateWordSearchGrid(selectedWords, 10);

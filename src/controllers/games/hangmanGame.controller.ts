@@ -128,7 +128,7 @@ export const createHangmanGame = async (req: CustomRequest, res: Response) => {
       status: "inProgress",
       foundLetters: [],
       wrongLetters: [],
-      timeTaken: 0, // Inicializar el tiempo tomado
+      timeTaken: 0,
     });
 
     await newHangmanGame.save();
@@ -157,7 +157,6 @@ export const guessLetter = async (req: CustomRequest, res: Response) => {
         .status(400)
         .json({ message: "El juego ya ha sido completado" });
 
-    // Validar si la letra ya fue adivinada anteriormente
     if (
       hangmanGame.foundLetters.includes(letter) ||
       hangmanGame.wrongLetters.includes(letter)
@@ -171,8 +170,12 @@ export const guessLetter = async (req: CustomRequest, res: Response) => {
     if (currentWord.includes(letter)) {
       hangmanGame.foundLetters.push(letter);
 
-      if (currentWord.split("").every((char) => hangmanGame.foundLetters.includes(char))) {
-        hangmanGame.currentWordIndex += 1; // Move to the next word
+      if (
+        currentWord
+          .split("")
+          .every((char) => hangmanGame.foundLetters.includes(char))
+      ) {
+        hangmanGame.currentWordIndex += 1;
         hangmanGame.foundLetters = [];
         if (hangmanGame.currentWordIndex >= hangmanGame.words.length) {
           hangmanGame.status = "completed";
@@ -195,30 +198,42 @@ export const completeCurrentGame = async (
 ) => {
   try {
     const { hangmanGameId } = req.params;
-    const { countAsCompleted = true, forceComplete = false, timeTaken } = req.body;
+    const {
+      countAsCompleted = true,
+      forceComplete = false,
+      timeTaken,
+      guessedLetters,
+      wrongLetters,
+    } = req.body;
     const userId = req.user?.id;
     const hangmanGame = await HangmanGame.findById(hangmanGameId);
     if (!hangmanGame)
       return res.status(404).json({ error: "Juego de Ahorcado no encontrado" });
 
     if (forceComplete) {
-      hangmanGame.timeTaken = timeTaken; // Actualizar el tiempo tomado
-      await completeHangmanGame(hangmanGame);
+      hangmanGame.timeTaken = timeTaken; 
+      hangmanGame.status = "completed"; 
+      await hangmanGame.save();
       return res.status(200).json({ message: "Juego completado forzosamente" });
     }
 
-    // Verificar si todas las letras de la palabra actual están en foundLetters
-    const currentWord = hangmanGame.words[hangmanGame.currentWordIndex];
-    const allLettersFound = currentWord
-      .split("")
-      .every((letter) => hangmanGame.foundLetters.includes(letter));
+    hangmanGame.foundLetters = guessedLetters;
+    hangmanGame.wrongLetters = wrongLetters;
 
-    if (!allLettersFound && countAsCompleted)
+    const currentWord = hangmanGame.words[hangmanGame.currentWordIndex];
+
+    const uniqueLetters = new Set(currentWord.split(""));
+    const allLettersFound = Array.from(uniqueLetters).every(
+      (letter) => hangmanGame.foundLetters.includes(letter)
+    );
+
+    if (!allLettersFound && countAsCompleted) {
       return handleIncompleteGame(req, res, hangmanGame);
+    }
 
     if (countAsCompleted) {
       hangmanGame.status = "completed";
-      hangmanGame.timeTaken = timeTaken; // Actualizar el tiempo tomado
+      hangmanGame.timeTaken = timeTaken; 
       await hangmanGame.save();
 
       const user = await User.findById(userId);
@@ -262,7 +277,6 @@ export const completeCurrentGame = async (
           "El mazo no tiene suficientes palabras válidas para crear un nuevo Juego del Ahorcado",
       });
 
-    // Seleccionar palabras de forma aleatoria
     const selectedWords = [];
     while (selectedWords.length < 5) {
       const randomIndex = Math.floor(Math.random() * words.length);
@@ -278,7 +292,7 @@ export const completeCurrentGame = async (
       status: "inProgress",
       foundLetters: [],
       wrongLetters: [],
-      timeTaken: 0, // Inicializar el tiempo tomado
+      timeTaken: 0, 
     });
     await newHangmanGame.save();
     return res.status(201).json({
@@ -309,6 +323,7 @@ const handleIncompleteGame = async (
 const completeHangmanGame = async (
   hangmanGame: InstanceType<typeof HangmanGame>
 ) => {
+  hangmanGame.completed = true;
   hangmanGame.status = "completed";
   await hangmanGame.save();
 };
@@ -369,7 +384,7 @@ export const deleteHangmanGame = async (req: CustomRequest, res: Response) => {
 
     await Game.findByIdAndDelete(hangmanGame.game);
 
-    if (hangmanGame.status === "completed") {
+    if (hangmanGame.completed) {
       const user = await User.findById(userId);
       if (user) {
         const gameType = "HangmanGame";

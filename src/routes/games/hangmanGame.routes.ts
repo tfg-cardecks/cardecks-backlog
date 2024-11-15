@@ -16,7 +16,7 @@ const router = Router();
 router.get("/hangmanGames", checkUserRol, getHangmanGames);
 router.post("/hangmanGames", checkUserRol, createHangmanGame);
 router.post("/currentHangmanGame/:hangmanGameId", checkUserRol, completeCurrentGame);
-router.get("/hangmanGame/:id", checkUserRol, getHangmanGameById); // Ensure this route is correct
+router.get("/hangmanGame/:id", checkUserRol, getHangmanGameById); 
 router.delete("/hangmanGame/:hangmanGameId", checkUserRol, deleteHangmanGame);
 router.patch("/resetGamesCompletedByType", checkUserRol, resetGamesCompletedByType);
 

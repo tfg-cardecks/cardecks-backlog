@@ -50,6 +50,10 @@ const hangmanGameSchema = new Schema({
     type: Number,
     default: 0,
   },
+  completed: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 export const HangmanGame = mongoose.model("HangmanGame", hangmanGameSchema);
