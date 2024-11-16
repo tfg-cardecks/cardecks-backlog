@@ -35,7 +35,7 @@ app.use('/images', express.static(path.join(__dirname, 'images')));
 
 
 expressOasGenerator.handleResponses(app, {
-  mongooseModels: ["User", "Card", "Deck", "Game", "WordSearchGame", "HangmanGame "],
+  mongooseModels: ["User", "Card", "Deck", "Game", "WordSearchGame", "HangmanGame"],
   swaggerDocumentOptions: { info: { title: "Cardecks API", version: "1.0.0" } },
   specOutputFileBehavior: "PRESERVE",
 });
