@@ -131,3 +131,4 @@ dist
 
 # Image files
 *.png
+build/
