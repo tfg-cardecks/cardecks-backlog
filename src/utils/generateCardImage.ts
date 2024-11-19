@@ -18,7 +18,12 @@ const drawText = (ctx: any, textArray: any[], isBackSide: boolean) => {
   });
 };
 
-const wrapText = (ctx: any, text: string, maxWidth: number, isBackSide: boolean) => {
+const wrapText = (
+  ctx: any,
+  text: string,
+  maxWidth: number,
+  isBackSide: boolean
+) => {
   const words = text.split(" ");
   let lines = [];
   let currentLine = words[0];
@@ -34,7 +39,10 @@ const wrapText = (ctx: any, text: string, maxWidth: number, isBackSide: boolean)
 
       if (isBackSide) {
         while (ctx.measureText(word).width > maxWidth) {
-          let part = word.slice(0, Math.floor(word.length * maxWidth / ctx.measureText(word).width));
+          let part = word.slice(
+            0,
+            Math.floor((word.length * maxWidth) / ctx.measureText(word).width)
+          );
           let partWidth = ctx.measureText(part).width;
 
           while (partWidth > maxWidth) {
@@ -63,7 +71,13 @@ const drawImages = async (ctx: any, imagesArray: any[]) => {
         const increasedHeight = image.height * 1.4;
         const increasedLeft = image.left * 0.2;
         const increasedTop = image.top * 0.6;
-        ctx.drawImage(img, increasedLeft, increasedTop, increasedWidth, increasedHeight);
+        ctx.drawImage(
+          img,
+          increasedLeft,
+          increasedTop,
+          increasedWidth,
+          increasedHeight
+        );
       } catch (error) {
         console.error(`Error al cargar la imagen ${image.url}:`, error);
         throw error;
@@ -128,6 +142,9 @@ export const generateCardImage = async (cardData: any, suffix: string) => {
     const ctx = canvas.getContext("2d");
 
     await drawCardSide(ctx, canvas, cardData, cardData.frontSide, "front");
+    if (!fs.existsSync(path.join(__dirname, `../images/`))) {
+      fs.mkdirSync(path.join(__dirname, `../images/`));
+    }
     const frontImagePath = path.join(
       __dirname,
       `../images/${cardData.title}_${suffix}_front.png`
