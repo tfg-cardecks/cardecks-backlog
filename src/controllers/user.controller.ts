@@ -31,11 +31,7 @@ export const getUserById = async (req: Request, res: Response) => {
     if (!user) {
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
-
-    const gameType = "WordSearchGame";
-    const totalGamesCompleted = user.gamesCompletedByType.get(gameType) || 0;
-
-    return res.status(200).json({ ...user.toObject(), totalGamesCompleted });
+    return res.status(200).json({ ...user.toObject() });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
   }
@@ -117,7 +113,6 @@ export const updateUserPassword = async (req: Request, res: Response) => {
   }
 };
 
-
 export const requestPasswordReset = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
@@ -131,9 +126,18 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
     //cambiar la url de resetLink en el despliegue
     //const resetLink = `https://xxxxx/reset-password/${token}`; xxxxx lo que me de el firebase
 
-    await sendEmail(user.email, "Restablecimiento de Contraseña", `Haz clic en el siguiente enlace para restablecer tu contraseña: ${resetLink}`);
+    await sendEmail(
+      user.email,
+      "Restablecimiento de Contraseña",
+      `Haz clic en el siguiente enlace para restablecer tu contraseña: ${resetLink}`
+    );
 
-    return res.status(200).json({ message: "Correo de restablecimiento de contraseña enviado",link: resetLink });
+    return res
+      .status(200)
+      .json({
+        message: "Correo de restablecimiento de contraseña enviado",
+        link: resetLink,
+      });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
   }
@@ -156,7 +160,9 @@ export const resetPassword = async (req: Request, res: Response) => {
     user.password = hashedPassword;
     await user.save();
 
-    return res.status(200).json({ message: "Contraseña actualizada con éxito" });
+    return res
+      .status(200)
+      .json({ message: "Contraseña actualizada con éxito" });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
   }
