@@ -133,13 +133,15 @@ const saveImageToFile = (canvas: any, imagePath: string) => {
   fs.writeFileSync(imagePath, buffer);
 };
 
-export const generateCardImage = async (cardData: any, suffix: string) => {
+export const generateCardImage = async (cardData: any, suffix: string, fontSize: number = 20) => {
   try {
     validateCardData(cardData);
     const cardWidth = 300;
     const cardHeight = 500;
     const canvas = createCardCanvas(cardWidth, cardHeight);
     const ctx = canvas.getContext("2d");
+
+    ctx.font = `${fontSize}px Arial`;
 
     await drawCardSide(ctx, canvas, cardData, cardData.frontSide, "front");
     if (!fs.existsSync(path.join(__dirname, `../images/`))) {
