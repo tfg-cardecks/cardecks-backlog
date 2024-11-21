@@ -28,13 +28,10 @@ const cardSchema = new Schema({
         content: {
           type: String,
           required: false,
-          validate: {
-            validator: function (value: string) {
-              return value.length <= 25;
-            },
-            message:
-              "El contenido del texto de la Parte Delantera no debe exceder los 25 caracteres",
-          },
+          maxlength: [
+            25,
+            "El contenido del texto de la Parte Delantera no debe exceder los 25 caracteres",
+          ],
         },
         fontSize: { type: Number, default: 16 },
         color: { type: String, default: "#000000" },
@@ -69,13 +66,10 @@ const cardSchema = new Schema({
         content: {
           type: String,
           required: false,
-          validate: {
-            validator: function (value: string) {
-              return value.length <= 103;
-            },
-            message:
-              "El contenido del texto de la Parte Trasera no debe exceder los 103 caracteres",
-          },
+          maxlength: [
+            103,
+            "El contenido del texto de la Parte Trasera no debe exceder los 103 caracteres",
+          ],
         },
         fontSize: { type: Number, default: 16 },
         color: { type: String, default: "#000000" },

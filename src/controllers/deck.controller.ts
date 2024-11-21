@@ -129,7 +129,8 @@ export const updateDeck = async (req: CustomRequest, res: Response) => {
       return res.status(401).json({ message: "Usuario no autenticado" });
 
     const existingDeck = await Deck.findById(req.params.id);
-    if (!existingDeck) return res.status(404).json({ message: "Mazo no encontrado" });
+    if (!existingDeck)
+      return res.status(404).json({ message: "Mazo no encontrado" });
 
     const deckData = req.body;
     const { name, theme, description, cards } = deckData;
@@ -155,7 +156,8 @@ export const updateDeck = async (req: CustomRequest, res: Response) => {
       { new: true, runValidators: true }
     );
 
-    if (!updatedDeck) return res.status(404).json({ message: "Mazo no encontrado" });
+    if (!updatedDeck)
+      return res.status(404).json({ message: "Mazo no encontrado" });
 
     return res.status(200).json(updatedDeck);
   } catch (error: any) {
@@ -290,7 +292,9 @@ export const importDeck = async (req: CustomRequest, res: Response) => {
     const user = await findUserById(userId, res);
     if (!user) return;
     if (!req.file) {
-      return res.status(400).json({ message: "No se ha proporcionado ningún archivo." });
+      return res
+        .status(400)
+        .json({ message: "No se ha proporcionado ningún archivo." });
     }
 
     const fileContent = req.file.buffer.toString("utf-8");
@@ -298,7 +302,9 @@ export const importDeck = async (req: CustomRequest, res: Response) => {
     try {
       deckData = JSON.parse(fileContent);
     } catch (error) {
-      return res.status(400).json({ message: "El archivo proporcionado no es un JSON válido." });
+      return res
+        .status(400)
+        .json({ message: "El archivo proporcionado no es un JSON válido." });
     }
 
     if (
@@ -325,9 +331,13 @@ export const importDeck = async (req: CustomRequest, res: Response) => {
         validateCardData(cardData);
       } catch (error) {
         if (error instanceof Error) {
-          return res.status(400).json({ message: `Carta inválida en el mazo: ${error.message}` });
+          return res
+            .status(400)
+            .json({ message: `Carta inválida en el mazo: ${error.message}` });
         } else {
-          return res.status(400).json({ message: "Carta inválida en el mazo: Error desconocido" });
+          return res
+            .status(400)
+            .json({ message: "Carta inválida en el mazo: Error desconocido" });
         }
       }
 

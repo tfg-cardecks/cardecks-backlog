@@ -132,12 +132,10 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
       `Haz clic en el siguiente enlace para restablecer tu contraseña: ${resetLink}`
     );
 
-    return res
-      .status(200)
-      .json({
-        message: "Correo de restablecimiento de contraseña enviado",
-        link: resetLink,
-      });
+    return res.status(200).json({
+      message: "Correo de restablecimiento de contraseña enviado",
+      link: resetLink,
+    });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
   }

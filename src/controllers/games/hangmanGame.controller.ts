@@ -211,8 +211,8 @@ export const completeCurrentGame = async (
       return res.status(404).json({ error: "Juego de Ahorcado no encontrado" });
 
     if (forceComplete) {
-      hangmanGame.timeTaken = timeTaken; 
-      hangmanGame.status = "completed"; 
+      hangmanGame.timeTaken = timeTaken;
+      hangmanGame.status = "completed";
       await hangmanGame.save();
       return res.status(200).json({ message: "Juego completado forzosamente" });
     }
@@ -223,8 +223,8 @@ export const completeCurrentGame = async (
     const currentWord = hangmanGame.words[hangmanGame.currentWordIndex];
 
     const uniqueLetters = new Set(currentWord.split(""));
-    const allLettersFound = Array.from(uniqueLetters).every(
-      (letter) => hangmanGame.foundLetters.includes(letter)
+    const allLettersFound = Array.from(uniqueLetters).every((letter) =>
+      hangmanGame.foundLetters.includes(letter)
     );
 
     if (!allLettersFound && countAsCompleted) {
@@ -233,7 +233,7 @@ export const completeCurrentGame = async (
 
     if (countAsCompleted) {
       hangmanGame.status = "completed";
-      hangmanGame.timeTaken = timeTaken; 
+      hangmanGame.timeTaken = timeTaken;
       await hangmanGame.save();
 
       const user = await User.findById(userId);
@@ -292,7 +292,7 @@ export const completeCurrentGame = async (
       status: "inProgress",
       foundLetters: [],
       wrongLetters: [],
-      timeTaken: 0, 
+      timeTaken: 0,
     });
     await newHangmanGame.save();
     return res.status(201).json({

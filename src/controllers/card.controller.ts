@@ -61,12 +61,18 @@ export const createCard = async (req: CustomRequest, res: Response) => {
     const suffix = Date.now().toString();
 
     try {
-      const { frontImageUrl, backImageUrl } = await generateCardImage(cardData, suffix);
+      const { frontImageUrl, backImageUrl } = await generateCardImage(
+        cardData,
+        suffix
+      );
       card.frontImageUrl = frontImageUrl;
       card.backImageUrl = backImageUrl;
     } catch (imageError) {
-      const errorMessage = imageError instanceof Error ? imageError.message : "Error desconocido";
-      return res.status(500).json({ message: `Error al generar la imagen de la carta: ${errorMessage}` });
+      const errorMessage =
+        imageError instanceof Error ? imageError.message : "Error desconocido";
+      return res.status(500).json({
+        message: `Error al generar la imagen de la carta: ${errorMessage}`,
+      });
     }
 
     await card.save();
@@ -89,18 +95,26 @@ export const updateCard = async (req: Request, res: Response) => {
     validateCardData(cardData);
 
     const existingCard = await Card.findById(req.params.id);
-    if (!existingCard) return res.status(404).json({ message: "Carta no encontrada" });
+    if (!existingCard)
+      return res.status(404).json({ message: "Carta no encontrada" });
 
     cardData._id = existingCard._id;
 
-    const frontSideModified = JSON.stringify(existingCard.frontSide) !== JSON.stringify(cardData.frontSide);
-    const backSideModified = JSON.stringify(existingCard.backSide) !== JSON.stringify(cardData.backSide);
+    const frontSideModified =
+      JSON.stringify(existingCard.frontSide) !==
+      JSON.stringify(cardData.frontSide);
+    const backSideModified =
+      JSON.stringify(existingCard.backSide) !==
+      JSON.stringify(cardData.backSide);
 
     const suffix = Date.now().toString();
 
     if (frontSideModified || backSideModified) {
       try {
-        const { frontImageUrl, backImageUrl } = await editCardImage(cardData, suffix);
+        const { frontImageUrl, backImageUrl } = await editCardImage(
+          cardData,
+          suffix
+        );
         if (frontSideModified) {
           cardData.frontImageUrl = frontImageUrl;
         }
@@ -108,8 +122,13 @@ export const updateCard = async (req: Request, res: Response) => {
           cardData.backImageUrl = backImageUrl;
         }
       } catch (imageError) {
-        const errorMessage = imageError instanceof Error ? imageError.message : "Error desconocido";
-        return res.status(500).json({ message: `Error al generar la imagen de la carta: ${errorMessage}` });
+        const errorMessage =
+          imageError instanceof Error
+            ? imageError.message
+            : "Error desconocido";
+        return res.status(500).json({
+          message: `Error al generar la imagen de la carta: ${errorMessage}`,
+        });
       }
     }
 
@@ -118,12 +137,17 @@ export const updateCard = async (req: Request, res: Response) => {
       ...cardData,
     };
 
-    const updatedCard = await Card.findByIdAndUpdate(req.params.id, updatedCardData, {
-      new: true, 
-      runValidators: true,
-    });
+    const updatedCard = await Card.findByIdAndUpdate(
+      req.params.id,
+      updatedCardData,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
 
-    if (!updatedCard) return res.status(404).json({ message: "Carta no encontrada" });
+    if (!updatedCard)
+      return res.status(404).json({ message: "Carta no encontrada" });
     return res.status(200).json(updatedCard);
   } catch (error: any) {
     handleSpecificValidationErrors(error, res);

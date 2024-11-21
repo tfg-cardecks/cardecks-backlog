@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 // local imports
 import { Game } from "../models/game";
 import { WordSearchGame } from "../models/games/wordSearchGame";
-import { User } from "../models/user"; 
+import { User } from "../models/user";
 
 export const getGames = async (_req: Request, res: Response) => {
   try {
