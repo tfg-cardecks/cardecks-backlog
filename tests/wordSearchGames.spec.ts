@@ -189,4 +189,36 @@ describe("WordSearchGame API", () => {
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("message");
   });
+
+  it("should return an error if a word search game is already in progress", async () => {
+    const createNew = await request(app)
+      .post(`${API_BASE_URL}/wordSearchGames`)
+      .set("Authorization", token)
+      .send({ deckId });
+
+    const gameResponse = await request(app)
+      .get(`${API_BASE_URL}/wordSearchGame/${createNew.body.wordSearchGameId}`)
+      .set("Authorization", token);
+
+    const foundWords = gameResponse.body.words;
+
+    await request(app)
+      .post(
+        `${API_BASE_URL}/currentWordSearchGame/${createNew.body.wordSearchGameId}`
+      )
+      .set("Authorization", token)
+      .send({ foundWords, timeTaken: 10 });
+
+    const response = await request(app)
+      .post(
+        `${API_BASE_URL}/currentWordSearchGame/${createNew.body.wordSearchGameId}`
+      )
+      .set("Authorization", token)
+      .send({ foundWords, timeTaken: 10 });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe(
+      "Ya tienes un Juego de Sopa de Letras en progreso"
+    );
+  });
 });

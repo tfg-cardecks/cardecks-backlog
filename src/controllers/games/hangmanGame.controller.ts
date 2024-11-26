@@ -259,6 +259,18 @@ export const completeCurrentGame = async (
       await user.save();
     }
 
+    let gameInProgress = await HangmanGame.findOne({
+      user: userId,
+      status: "inProgress",
+    });
+
+    if (gameInProgress) {
+      return res.status(400).json({
+        message: "Ya tienes un Juego del Ahorcado en progreso",
+        guessTheImageGameId: gameInProgress._id,
+      });
+    }
+
     const deck = await Deck.findById(hangmanGame.deck).populate("cards");
     if (!deck) return res.status(404).json({ error: "Mazo no encontrado" });
 

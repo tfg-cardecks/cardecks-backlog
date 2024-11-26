@@ -195,6 +195,19 @@ export const completeCurrentGame = async (
     user.totalGamesCompletedByType.set(gameType, totalCount + 1);
     await user.save();
 
+    let gameInProgress = await WordSearchGame.findOne({
+      user: userId,
+      status: "inProgress",
+    });
+
+    if (gameInProgress) {
+      return res.status(400).json({
+        message: "Ya tienes un Juego de Sopa de Letras en progreso",
+        guessTheImageGameId: gameInProgress._id,
+      });
+    }
+
+
     if (currentCount + 1 < maxGames) {
       const deck = await Deck.findById(wordSearchGame.deck).populate("cards");
       if (!deck) {

@@ -6,15 +6,14 @@ import app from "../src/app";
 import { API_BASE_URL, AUTH_BASE_URL } from "./utils/constants";
 import { user } from "./utils/newUser";
 import {
-  validCardDeckForHangmanGame,
-  validCard2DeckForHangmanGame,
-  validCard3DeckForHangmanGame,
-  validCard4DeckForHangmanGame,
-  validCard5DeckForHangmanGame,
-  validDeckForHangmanGame,
-  validHangmanGame,
-  invalidHangmanGames,
-} from "./utils/newHangmanGame";
+  validGuessTheImageGame,
+  validDeckForGuessTheImageGame,
+  validCardDeckForGuessTheImageGame,
+  validCard2DeckForGuessTheImageGame,
+  validCard3DeckForGuessTheImageGame,
+  validCard4DeckForGuessTheImageGame,
+  validCard5DeckForGuessTheImageGame,
+} from "./utils/newGuessTheImageGame";
 
 before;
 after;
@@ -22,7 +21,7 @@ after;
 let token: string;
 let deckId: string;
 let gameId: string;
-let hangmanGameId: string;
+let guessTheImageGameId: string;
 let userId: string;
 let cardId1: string;
 let cardId2: string;
@@ -43,161 +42,130 @@ beforeAll(async () => {
   const responseCard = await request(app)
     .post(`${API_BASE_URL}/cards`)
     .set("Authorization", token)
-    .send(validCardDeckForHangmanGame);
+    .send(validCardDeckForGuessTheImageGame);
   cardId1 = responseCard.body._id;
 
   const responseCard2 = await request(app)
     .post(`${API_BASE_URL}/cards`)
     .set("Authorization", token)
-    .send(validCard2DeckForHangmanGame);
+    .send(validCard2DeckForGuessTheImageGame);
   cardId2 = responseCard2.body._id;
 
   const responseCard3 = await request(app)
     .post(`${API_BASE_URL}/cards`)
     .set("Authorization", token)
-    .send(validCard3DeckForHangmanGame);
+    .send(validCard3DeckForGuessTheImageGame);
   cardId3 = responseCard3.body._id;
 
   const responseCard4 = await request(app)
     .post(`${API_BASE_URL}/cards`)
     .set("Authorization", token)
-    .send(validCard4DeckForHangmanGame);
+    .send(validCard4DeckForGuessTheImageGame);
   cardId4 = responseCard4.body._id;
 
   const responseCard5 = await request(app)
     .post(`${API_BASE_URL}/cards`)
     .set("Authorization", token)
-    .send(validCard5DeckForHangmanGame);
+    .send(validCard5DeckForGuessTheImageGame);
   cardId5 = responseCard5.body._id;
 
   const responseDeck = await request(app)
     .post(`${API_BASE_URL}/decks`)
     .set("Authorization", token)
     .send({
-      ...validDeckForHangmanGame,
+      ...validDeckForGuessTheImageGame,
       cards: [cardId1, cardId2, cardId3, cardId4, cardId5],
     });
 
   deckId = responseDeck.body._id;
 
   const response2 = await request(app)
-    .post(`${API_BASE_URL}/hangmanGames`)
+    .post(`${API_BASE_URL}/guessTheImageGames`)
     .set("Authorization", token)
-    .send({ ...validHangmanGame, deckId });
+    .send({ ...validGuessTheImageGame, deckId });
 
-  hangmanGameId = response2.body.hangmanGameId;
+  guessTheImageGameId = response2.body.guessTheImageGameId;
   gameId = response2.body.gameId;
 });
 
-describe("HangmanGame API", () => {
-  it("should get all hangman games", async () => {
+describe("GuessTheImageGame API", () => {
+  it("should get all guess the image games", async () => {
     const response = await request(app)
-      .get(`${API_BASE_URL}/hangmanGames`)
+      .get(`${API_BASE_URL}/guessTheImageGames`)
       .set("Authorization", token);
     expect(response.status).toBe(200);
     expect(response.body).toBeInstanceOf(Array);
   });
 
-  it("should return a message indicating a hangman game is already in progress", async () => {
+  it("should return a message indicating a guess the image game is already in progress", async () => {
     const response = await request(app)
-      .post(`${API_BASE_URL}/hangmanGames`)
+      .post(`${API_BASE_URL}/guessTheImageGames`)
       .set("Authorization", token)
       .send({ deckId });
 
     expect(response.status).toBe(200);
     expect(response.body.message).toBe(
-      "Ya tienes un Juego del Ahorcado en progreso"
+      "Ya tienes un Juego de Adivinar la Imagen en progreso"
     );
   });
 
-  it("should get a hangman game by ID", async () => {
+  it("should get a guess the image game by ID", async () => {
     const response = await request(app)
-      .get(`${API_BASE_URL}/hangmanGame/${hangmanGameId}`)
+      .get(`${API_BASE_URL}/guessTheImageGame/${guessTheImageGameId}`)
       .set("Authorization", token);
     expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty("_id", hangmanGameId);
+    expect(response.body).toHaveProperty("_id", guessTheImageGameId);
   });
 
-  it("should return 404 for a non-existent hangman game ID", async () => {
+  it("should return 404 for a non-existent guess the image game ID", async () => {
     const response = await request(app)
-      .get(`${API_BASE_URL}/hangmanGame/66fbe37b9d600a318c38ab12`)
+      .get(`${API_BASE_URL}/guessTheImageGame/66fbe37b9d600a318c38ab12`)
       .set("Authorization", token);
     expect(response.status).toBe(404);
   });
 
-  it("should return 500 for an invalid hangman game ID", async () => {
+  it("should return 500 for an invalid guess the image game ID", async () => {
     const response = await request(app)
-      .get(`${API_BASE_URL}/hangmanGame/invalidId`)
+      .get(`${API_BASE_URL}/guessTheImageGame/invalidId`)
       .set("Authorization", token);
     expect(response.status).toBe(500);
   });
 
-  it("should complete a hangman game with all letters found", async () => {
-    const guessedLetters = [
-      "K",
-      "I",
-      "K",
-      "O",
-      "P",
-      "A",
-      "T",
-      "O",
-      "F",
-      "A",
-      "I",
-      "S",
-      "A",
-      "N",
-      "G",
-      "A",
-      "T",
-      "O",
-      "L",
-      "I",
-      "L",
-      "I",
-      "L",
-    ];
+  it("should complete a guess the image game with the correct answer", async () => {
+    const gameResponse = await request(app)
+      .get(`${API_BASE_URL}/guessTheImageGame/${guessTheImageGameId}`)
+      .set("Authorization", token);
+
+    const correctAnswer = gameResponse.body.correctAnswer;
 
     const response = await request(app)
-      .post(`${API_BASE_URL}/currentHangmanGame/${hangmanGameId}`)
+      .post(`${API_BASE_URL}/currentGuessTheImageGame/${guessTheImageGameId}`)
       .set("Authorization", token)
-      .send({
-        guessedLetters,
-        wrongLetters: [],
-        countAsCompleted: true,
-        timeTaken: 10,
-      });
+      .send({ selectedAnswer: correctAnswer, timeTaken: 10 });
 
     expect(response.status).toBe(201);
     expect(response.body).toHaveProperty("gameId");
-    expect(response.body).toHaveProperty("hangmanGameId");
+    expect(response.body).toHaveProperty("guessTheImageGameId");
   }, 3000);
 
-  it("should return an error when not all letters are found", async () => {
+  it("should return an error when the answer is incorrect", async () => {
     const response = await request(app)
-      .post(`${API_BASE_URL}/currentHangmanGame/${hangmanGameId}`)
+      .post(`${API_BASE_URL}/currentGuessTheImageGame/${guessTheImageGameId}`)
       .set("Authorization", token)
-      .send({
-        guessedLetters: ["K", "I"],
-        wrongLetters: [],
-        countAsCompleted: true,
-        timeTaken: 10,
-      });
+      .send({ selectedAnswer: "WRONG_ANSWER", timeTaken: 10 });
 
     expect(response.status).toBe(400);
     expect(response.body.error).toBe(
-      "Todas las letras deben ser encontradas o el usuario debe elegir terminar el juego antes de completarlo"
+      "La respuesta debe ser correcta o el usuario debe elegir terminar el juego antes de completarlo"
     );
   });
 
-  it("should force complete a hangman game", async () => {
+  it("should force complete a guess the image game", async () => {
     const response = await request(app)
-      .post(`${API_BASE_URL}/currentHangmanGame/${hangmanGameId}`)
+      .post(`${API_BASE_URL}/currentGuessTheImageGame/${guessTheImageGameId}`)
       .set("Authorization", token)
       .send({
-        guessedLetters: ["K", "I"],
-        wrongLetters: [],
+        selectedAnswer: "WRONG_ANSWER",
         forceComplete: true,
         timeTaken: 10,
       });
@@ -206,16 +174,16 @@ describe("HangmanGame API", () => {
     expect(response.body.message).toBe("Juego completado forzosamente");
   });
 
-  it("should delete a hangman game by ID", async () => {
+  it("should delete a guess the image game by ID", async () => {
     const response = await request(app)
-      .delete(`${API_BASE_URL}/hangmanGame/${hangmanGameId}`)
+      .delete(`${API_BASE_URL}/guessTheImageGame/${guessTheImageGameId}`)
       .set("Authorization", token);
     expect(response.status).toBe(204);
   });
 
-  it("should return 404 when deleting a non-existent hangman game ID", async () => {
+  it("should return 404 when deleting a non-existent guess the image game ID", async () => {
     const response = await request(app)
-      .delete(`${API_BASE_URL}/hangmanGame/66fbe37b9d600a318c38ab12`)
+      .delete(`${API_BASE_URL}/guessTheImageGame/66fbe37b9d600a318c38ab12`)
       .set("Authorization", token);
     expect(response.status).toBe(404);
   });
@@ -224,45 +192,41 @@ describe("HangmanGame API", () => {
     const response = await request(app)
       .patch(`${API_BASE_URL}/resetGamesCompletedByType`)
       .set("Authorization", token)
-      .send({ gameType: "HangmanGame" });
+      .send({ gameType: "GuessTheImageGame" });
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("message");
   });
-
-  it("should return an error if a hangman game is already in progress", async () => {
-
+  it("should return an error if a guess the image game is already in progress", async () => {
     const createNew = await request(app)
-      .post(`${API_BASE_URL}/hangmanGames`)
+      .post(`${API_BASE_URL}/guessTheImageGames`)
       .set("Authorization", token)
       .send({ deckId });
 
     const gameResponse = await request(app)
-      .get(`${API_BASE_URL}/hangmanGame/${createNew.body.hangmanGameId}`)
+      .get(
+        `${API_BASE_URL}/guessTheImageGame/${createNew.body.guessTheImageGameId}`
+      )
       .set("Authorization", token);
 
-    const currentWord =
-      gameResponse.body.words[gameResponse.body.currentWordIndex];
-    const uniqueLetters = new Set(currentWord.split(""));
-    const guessedLetters = Array.from(uniqueLetters);
-
+    const correctAnswer = gameResponse.body.correctAnswer;
     await request(app)
       .post(
-        `${API_BASE_URL}/currentHangmanGame/${createNew.body.hangmanGameId}`
+        `${API_BASE_URL}/currentGuessTheImageGame/${createNew.body.guessTheImageGameId}`
       )
       .set("Authorization", token)
-      .send({ guessedLetters, timeTaken: 10 });
+      .send({ selectedAnswer: correctAnswer, timeTaken: 10 });
 
     const response = await request(app)
       .post(
-        `${API_BASE_URL}/currentHangmanGame/${createNew.body.hangmanGameId}`
+        `${API_BASE_URL}/currentGuessTheImageGame/${createNew.body.guessTheImageGameId}`
       )
       .set("Authorization", token)
-      .send({ guessedLetters, timeTaken: 10 });
+      .send({ selectedAnswer: correctAnswer, timeTaken: 10 });
 
     expect(response.status).toBe(400);
     expect(response.body.message).toBe(
-      "Ya tienes un Juego del Ahorcado en progreso"
+      "Ya tienes un Juego de Adivinar la Imagen en progreso"
     );
   });
 });

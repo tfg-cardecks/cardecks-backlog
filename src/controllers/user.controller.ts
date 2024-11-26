@@ -123,8 +123,6 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
 
     const token = jwt.sign({ id: user._id }, "secretKey", { expiresIn: "15m" });
     const resetLink = `${req.protocol}://cardecks-tfg.web.app/reset-password/${token}`;
-    //cambiar la url de resetLink en el despliegue
-    //const resetLink = `https://xxxxx/reset-password/${token}`; xxxxx lo que me de el firebase
 
     await sendEmail(
       user.email,
