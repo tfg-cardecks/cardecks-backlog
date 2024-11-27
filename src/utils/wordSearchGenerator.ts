@@ -14,7 +14,7 @@ export function generateWordSearchGrid(
     .map((word) => cleanWord(word))
     .filter((word): word is string => word !== null);
 
-  const validWords = cleanedWords.filter((word) => word.length <= gridSize);
+  const validWords = cleanedWords.filter((word) => word.length <= 9);
 
   if (validWords.length < 4) {
     return {
