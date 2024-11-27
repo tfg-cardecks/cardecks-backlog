@@ -220,7 +220,7 @@ export const completeCurrentGame = async (
             textObj.content.toUpperCase()
           )
         )
-        .filter((text: string) => text.length <= 10);
+        .filter((text: string) => text.length <= 9);
       if (words.length < 4) {
         return res.status(400).json({
           error:
