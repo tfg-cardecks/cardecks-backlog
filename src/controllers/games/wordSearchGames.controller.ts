@@ -96,7 +96,7 @@ export const createWordSearchGame = async (
       .flatMap((card: any) =>
         card.frontSide.text.map((textObj: any) => textObj.content.toUpperCase())
       )
-      .filter((text: string) => text.length <= 10);
+      .filter((text: string) => text.length <= 9);
 
     if (words.length < 5)
       return res.status(400).json({
