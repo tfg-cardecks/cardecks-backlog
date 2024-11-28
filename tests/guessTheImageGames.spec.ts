@@ -197,6 +197,7 @@ describe("GuessTheImageGame API", () => {
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("message");
   });
+  
   it("should return an error if a guess the image game is already in progress", async () => {
     const createNew = await request(app)
       .post(`${API_BASE_URL}/guessTheImageGames`)
