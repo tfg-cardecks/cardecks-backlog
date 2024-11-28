@@ -114,7 +114,7 @@ export const createGuessTheImageGame = async (
       )
       .filter(
         (text: string, index, self) =>
-          text.length <= 10 && self.indexOf(text) === index
+          text.length > 0  && self.indexOf(text) === index
       );
 
     if (images.length < 5 || words.length < 5)

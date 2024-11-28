@@ -8,6 +8,12 @@ import { Deck } from "../../models/deck";
 import { handleValidationErrors } from "../../validators/validate";
 import { CustomRequest } from "../../interfaces/customRequest";
 
+function cleanWord(word: string): string {
+  const withoutSpaces = word.replace(/\s+/g, '');
+  const withoutAccents = withoutSpaces.normalize("NFD").replace(/[\u0300-\u036f]/g, '');
+  return withoutAccents.replace(/[^A-Z]/gi, '').toUpperCase();
+}
+
 export const getHangmanGames = async (_req: Request, res: Response) => {
   try {
     const hangmanGames = await HangmanGame.find();
@@ -89,7 +95,7 @@ export const createHangmanGame = async (req: CustomRequest, res: Response) => {
 
     const words = deck.cards
       .flatMap((card: any) =>
-        card.frontSide.text.map((textObj: any) => textObj.content.toUpperCase())
+        card.frontSide.text.map((textObj: any) => cleanWord(textObj.content))
       )
       .filter(
         (text: string, index, self) =>
@@ -276,7 +282,7 @@ export const completeCurrentGame = async (
 
     const words = deck.cards
       .flatMap((card: any) =>
-        card.frontSide.text.map((textObj: any) => textObj.content.toUpperCase())
+        card.frontSide.text.map((textObj: any) => cleanWord(textObj.content))
       )
       .filter(
         (text: string, index, self) =>
