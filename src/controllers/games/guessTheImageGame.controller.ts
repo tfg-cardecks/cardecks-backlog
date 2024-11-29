@@ -8,6 +8,11 @@ import { Deck } from "../../models/deck";
 import { handleValidationErrors } from "../../validators/validate";
 import { CustomRequest } from "../../interfaces/customRequest";
 
+function cleanWord(word: string): string {
+  const withoutSpecialChars = word.replace(/[^A-Z\s]/gi, '');
+  return withoutSpecialChars.toUpperCase();
+}
+
 export const getGuessTheImageGames = async (_req: Request, res: Response) => {
   try {
     const guessTheImageGames = await GuessTheImageGame.find();
@@ -110,7 +115,7 @@ export const createGuessTheImageGame = async (
 
     const words = textImgCards
       .flatMap((card: any) =>
-        card.frontSide.text.map((textObj: any) => textObj.content.toUpperCase())
+        card.frontSide.text.map((textObj: any) => cleanWord(textObj.content))
       )
       .filter(
         (text: string, index, self) =>
@@ -279,7 +284,7 @@ export const completeCurrentGame = async (
 
     const words = textImgCards
       .flatMap((card: any) =>
-        card.frontSide.text.map((textObj: any) => textObj.content.toUpperCase())
+        card.frontSide.text.map((textObj: any) => cleanWord(textObj.content))
       )
       .filter(
         (text: string, index, self) =>
