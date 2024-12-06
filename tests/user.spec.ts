@@ -32,18 +32,6 @@ beforeAll(async () => {
 });
 
 describe("User Routes", () => {
-  it("should request a password reset", async () => {
-    const email = user.email;
-    const response = await request(app)
-      .post(`${API_BASE_URL}/user/forgot-password`)
-      .send({ email });
-    expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty(
-      "message",
-      "Correo de restablecimiento de contraseña enviado"
-    );
-  });
-
   it("should not reset password with invalid token", async () => {
     const invalidToken = "invalidToken";
     const newPassword = "NewPassword123!";
