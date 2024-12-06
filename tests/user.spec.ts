@@ -2,7 +2,7 @@ import request from "supertest";
 import mongoose from "mongoose";
 import app from "../src/app";
 import { API_BASE_URL, AUTH_BASE_URL } from "./utils/constants";
-import { user, badUsers } from "./utils/newUser";
+import { user, badUsers, user2 } from "./utils/newUser";
 import { before, after } from "./utils/hooks";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
@@ -13,6 +13,8 @@ after;
 
 let token: string;
 let userId: string;
+let token2: string;
+let userId2: string;
 
 beforeAll(async () => {
   await request(app).post(`${AUTH_BASE_URL}/signup`).send(user);
@@ -20,8 +22,15 @@ beforeAll(async () => {
     .post(`${AUTH_BASE_URL}/signin`)
     .send({ emailOrUsername: user.username, password: user.password });
 
+  await request(app).post(`${AUTH_BASE_URL}/signup`).send(user2);
+  const response2 = await request(app)
+    .post(`${AUTH_BASE_URL}/signin`)
+    .send({ emailOrUsername: user2.username, password: user2.password });
+
   token = response.body.token;
   userId = response.body.id;
+  token2 = response2.body.token;
+  userId2 = response2.body.id;
 });
 
 describe("User Routes", () => {
@@ -110,12 +119,16 @@ describe("User Routes", () => {
   });
 
   it("should edit a password of a user by ID", async () => {
-    const currentPassword = "NewPassword123!";
-    const newUserPassword = "NewPassword12334!";
+    const usuario = await User.findOne({ username: user2.username });
+    const usuarioId = usuario?._id;
+
+    const newUserPassword = "NewPassword12334!@";
+
     const response = await request(app)
-      .patch(`${API_BASE_URL}/user/${userId}/password`)
-      .set("Authorization", token)
-      .send({ currentPassword: currentPassword, newPassword: newUserPassword });
+      .patch(`${API_BASE_URL}/user/${usuarioId}/password`)
+      .set("Authorization", token2)
+      .send({ currentPassword: user2.password, newPassword: newUserPassword });
+
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty(
       "message",

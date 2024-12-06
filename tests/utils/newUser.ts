@@ -6,6 +6,13 @@ export const user = {
   role: "authenticated",
 };
 
+export const user2 = {
+  email: "johnY2@gmail.com",
+  username: "johndoeY2",
+  password: "@16Febrero",
+  role: "authenticated",
+};
+
 export const badUsers = [
   // missing email
   {
