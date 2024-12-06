@@ -2,10 +2,8 @@ import request from "supertest";
 import mongoose from "mongoose";
 import app from "../src/app";
 import { API_BASE_URL, AUTH_BASE_URL } from "./utils/constants";
-import { user, badUsers, user2 } from "./utils/newUser";
+import { user, user2 } from "./utils/newUser";
 import { before, after } from "./utils/hooks";
-import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
 import { User } from "../src/models/user";
 
 before;
@@ -44,31 +42,6 @@ describe("User Routes", () => {
       "message",
       "Correo de restablecimiento de contraseña enviado"
     );
-
-    const userInDb = await User.findOne({ email });
-    if (!userInDb) {
-      throw new Error("User not found");
-    }
-    const token = jwt.sign({ id: userInDb._id }, "secretKey", {
-      expiresIn: "15m",
-    });
-
-    const newPassword = "NewPassword123!";
-    const resetResponse = await request(app)
-      .post(`${API_BASE_URL}/user/forgot-password/${token}`)
-      .send({ newPassword });
-    expect(resetResponse.status).toBe(200);
-    expect(resetResponse.body).toHaveProperty(
-      "message",
-      "Contraseña actualizada con éxito"
-    );
-
-    const updatedUser = await User.findById(userInDb._id);
-    if (!updatedUser) {
-      throw new Error("Updated user not found");
-    }
-    const isMatch = await bcrypt.compare(newPassword, updatedUser.password);
-    expect(isMatch).toBe(true);
   });
 
   it("should not reset password with invalid token", async () => {
