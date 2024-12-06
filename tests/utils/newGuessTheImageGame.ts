@@ -56,7 +56,7 @@ export const validCardDeckForGuessTheImageGame = {
   frontSide: {
     text: [
       {
-        content: "Texto1",
+        content: "Arbol",
       },
     ],
   },
@@ -76,7 +76,7 @@ export const validCard2DeckForGuessTheImageGame = {
   frontSide: {
     text: [
       {
-        content: "Texto2",
+        content: "Nubes",
       },
     ],
   },
@@ -96,7 +96,7 @@ export const validCard3DeckForGuessTheImageGame = {
   frontSide: {
     text: [
       {
-        content: "Texto3",
+        content: "Nubosa",
       },
     ],
   },
@@ -116,7 +116,7 @@ export const validCard4DeckForGuessTheImageGame = {
   frontSide: {
     text: [
       {
-        content: "Texto4",
+        content: "Cascada",
       },
     ],
   },
@@ -136,7 +136,7 @@ export const validCard5DeckForGuessTheImageGame = {
   frontSide: {
     text: [
       {
-        content: "Texto5",
+        content: "Lluvia",
       },
     ],
   },
