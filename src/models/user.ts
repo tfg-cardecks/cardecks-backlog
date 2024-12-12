@@ -30,6 +30,7 @@ const userSchema = new Schema({
     required: true,
     default: "anonymous",
   },
+  isNewUser: { type: Boolean, default: true },
   gamesCompletedByType: {
     type: Map,
     of: Number,
