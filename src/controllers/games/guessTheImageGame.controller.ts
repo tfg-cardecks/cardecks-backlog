@@ -1,6 +1,6 @@
 import { Response, Request } from "express";
 
-//local imports
+// local imports
 import { Game } from "../../models/game";
 import { GuessTheImageGame } from "../../models/games/guessTheImageGame";
 import { User } from "../../models/user";
@@ -9,7 +9,7 @@ import { handleValidationErrors } from "../../validators/validate";
 import { CustomRequest } from "../../interfaces/customRequest";
 
 function cleanWord(word: string): string {
-  const withoutSpecialChars = word.replace(/[^A-Z\s]/gi, '');
+  const withoutSpecialChars = word.replace(/[^A-Z\s]/gi, "");
   return withoutSpecialChars.toUpperCase();
 }
 
@@ -44,7 +44,7 @@ export const createGuessTheImageGame = async (
   res: Response
 ) => {
   try {
-    const { deckId } = req.body;
+    const { deckId, settings } = req.body;
     const userId = req.user?.id;
 
     if (!deckId)
@@ -61,39 +61,26 @@ export const createGuessTheImageGame = async (
       user.gamesCompletedByType = new Map<string, number>();
 
     const gameType = "GuessTheImageGame";
-    const currentCount = user.gamesCompletedByType.get(gameType) || 0;
+    const maxGames = settings.totalGames;
 
-    const maxGames = 25;
-
-    if (currentCount >= maxGames) {
-      return res.status(400).json({
-        message: `Ya has completado ${maxGames} juegos de adivinar la imagen. Por favor, reinicia el contador para comenzar una nueva serie.`,
-      });
+    // Validar el valor de totalGames
+    if (maxGames < 1 || maxGames > 25) {
+      return res
+        .status(400)
+        .json({ message: "El valor de totalGames debe estar entre 1 y 25" });
     }
 
-    let game = await Game.findOne({
+    const game = new Game({
+      name: "Adivinar la Imagen",
       user: userId,
       gameType: gameType,
-      _id: {
-        $in: await GuessTheImageGame.find({
-          user: userId,
-          status: "inProgress",
-        }).distinct("game"),
-      },
+      currentGameCount: 0, // Inicializar el contador de partidas en 0
+      totalGames: maxGames,
     });
 
-    if (game) {
-      const guessTheImageGame = await GuessTheImageGame.findOne({
-        game: game._id,
-        user: userId,
-        status: "inProgress",
-      });
-
-      return res.status(200).json({
-        message: "Ya tienes un Juego de Adivinar la Imagen en progreso",
-        guessTheImageGameId: guessTheImageGame?._id,
-      });
-    }
+    await game.save();
+    user.games.push(game._id);
+    await user.save();
 
     const deck = await Deck.findById(deckId).populate("cards");
     if (!deck) return res.status(404).json({ message: "Mazo no encontrado" });
@@ -119,7 +106,7 @@ export const createGuessTheImageGame = async (
       )
       .filter(
         (text: string, index, self) =>
-          text.length > 0  && self.indexOf(text) === index
+          text.length > 0 && self.indexOf(text) === index
       );
 
     if (images.length < 5 || words.length < 5)
@@ -143,18 +130,7 @@ export const createGuessTheImageGame = async (
 
     const options = shuffleArray(wordOptions);
 
-    game = new Game({
-      name: "Adivinar la Imagen",
-      user: userId,
-      gameType: "GuessTheImageGame",
-    });
-
-    await game.save();
-
-    user.games.push(game._id);
-    await user.save();
-
-    const newGuessTheImageGame = new GuessTheImageGame({
+    const guessTheImageGame = new GuessTheImageGame({
       game: game._id,
       user: userId,
       deck: deck._id,
@@ -163,15 +139,23 @@ export const createGuessTheImageGame = async (
       correctAnswer: correctAnswer,
       selectedAnswer: "",
       status: "inProgress",
-      timeTaken: 0,
+      duration: settings.duration,
     });
 
-    await newGuessTheImageGame.save();
+    await guessTheImageGame.save();
 
-    return res.status(201).json({
-      gameId: game._id,
-      guessTheImageGameId: newGuessTheImageGame._id,
-    });
+    // Incrementar el contador de partidas del juego
+    game.currentGameCount += 1;
+    await game.save();
+    return res
+      .status(201)
+      .json({
+        message: "Juego creado con éxito",
+        game,
+        guessTheImageGame,
+        currentGame: game.currentGameCount,
+        totalGames: maxGames,
+      });
   } catch (error: any) {
     handleValidationErrors(error, res);
   }
@@ -195,7 +179,6 @@ export const completeCurrentGame = async (
     const {
       countAsCompleted = true,
       forceComplete = false,
-      timeTaken,
       selectedAnswer,
     } = req.body;
 
@@ -208,7 +191,6 @@ export const completeCurrentGame = async (
         .json({ error: "Juego de Adivinar la Imagen no encontrado" });
 
     if (forceComplete) {
-      guessTheImageGame.timeTaken = timeTaken;
       guessTheImageGame.status = "completed";
       await guessTheImageGame.save();
       return res.status(200).json({ message: "Juego completado forzosamente" });
@@ -225,7 +207,6 @@ export const completeCurrentGame = async (
 
     if (countAsCompleted) {
       guessTheImageGame.status = "completed";
-      guessTheImageGame.timeTaken = timeTaken;
       await guessTheImageGame.save();
 
       const user = await User.findById(userId);
@@ -240,95 +221,102 @@ export const completeCurrentGame = async (
       const currentCount = user.gamesCompletedByType.get(gameType) || 0;
       const totalCount = user.totalGamesCompletedByType.get(gameType) || 0;
 
-      const maxGames = 25;
-      if (currentCount >= maxGames)
-        return res.status(200).json({
-          message: `¡Felicidades! Has completado ${maxGames} ${gameType}. Puedes comenzar una nueva serie si deseas jugar de nuevo.`,
-        });
+      const game = await Game.findById(guessTheImageGame.game);
+      if (!game) {
+        return res.status(404).json({ message: "Juego no encontrado" });
+      }
+
+      const maxGames = game.totalGames;
 
       user.gamesCompletedByType.set(gameType, currentCount + 1);
       user.totalGamesCompletedByType.set(gameType, totalCount + 1);
       await user.save();
-    }
 
-    let gameInProgress = await GuessTheImageGame.findOne({
-      user: userId,
-      status: "inProgress",
-    });
+      if (game.currentGameCount >= maxGames) {
+        // No permitir crear más partidas
+        return res.status(200).json({
+          message: `¡Felicidades! Has completado ${maxGames} ${gameType}. No puedes crear más partidas en esta serie.`,
+          currentGame: game.currentGameCount,
+          totalGames: maxGames,
+        });
+      }
 
-    if (gameInProgress) {
-      return res.status(400).json({
-        message: "Ya tienes un Juego de Adivinar la Imagen en progreso",
-        guessTheImageGameId: gameInProgress._id,
-      });
-    }
-    const deck = await Deck.findById(guessTheImageGame.deck).populate("cards");
-    if (!deck) return res.status(404).json({ error: "Mazo no encontrado" });
+      // Incrementar el contador de partidas del juego
+      game.currentGameCount += 1;
+      await game.save();
 
-    const textImgCards = deck.cards.filter(
-      (card: any) => card.cardType === "txtImg"
-    );
+      const deck = await Deck.findById(guessTheImageGame.deck).populate(
+        "cards"
+      );
+      if (!deck) return res.status(404).json({ error: "Mazo no encontrado" });
 
-    if (textImgCards.length < 5) {
-      return res.status(400).json({
-        message:
-          "El mazo debe tener al menos 5 cartas de tipo txtImg para crear un Juego de Adivinar la Imagen",
-      });
-    }
-
-    const images = textImgCards
-      .flatMap((card: any) =>
-        card.backSide.images.map((imageObj: any) => imageObj.url)
-      )
-      .filter((image: string) => image);
-
-    const words = textImgCards
-      .flatMap((card: any) =>
-        card.frontSide.text.map((textObj: any) => cleanWord(textObj.content))
-      )
-      .filter(
-        (text: string, index, self) =>
-          text.length <= 10 && self.indexOf(text) === index
+      const textImgCards = deck.cards.filter(
+        (card: any) => card.cardType === "txtImg"
       );
 
-    if (images.length < 5 || words.length < 5)
-      return res.status(400).json({
-        message:
-          "El mazo no tiene suficientes cartas con imágenes y palabras válidas para crear un nuevo Juego de Adivinar la Imagen",
+      if (textImgCards.length < 5) {
+        return res.status(400).json({
+          message:
+            "El mazo debe tener al menos 5 cartas de tipo txtImg para crear un Juego de Adivinar la Imagen",
+        });
+      }
+
+      const images = textImgCards
+        .flatMap((card: any) =>
+          card.backSide.images.map((imageObj: any) => imageObj.url)
+        )
+        .filter((image: string) => image);
+
+      const words = textImgCards
+        .flatMap((card: any) =>
+          card.frontSide.text.map((textObj: any) => cleanWord(textObj.content))
+        )
+        .filter(
+          (text: string, index, self) =>
+            text.length <= 10 && self.indexOf(text) === index
+        );
+
+      if (images.length < 5 || words.length < 5)
+        return res.status(400).json({
+          message:
+            "El mazo no tiene suficientes cartas con imágenes y palabras válidas para crear un nuevo Juego de Adivinar la Imagen",
+        });
+
+      const randomIndex = Math.floor(Math.random() * images.length);
+      const image = images[randomIndex];
+      const correctAnswer = words[randomIndex];
+
+      const wordOptions = [correctAnswer];
+      while (wordOptions.length < 4) {
+        const randomWordIndex = Math.floor(Math.random() * words.length);
+        const randomWord = words[randomWordIndex];
+        if (!wordOptions.includes(randomWord)) {
+          wordOptions.push(randomWord);
+        }
+      }
+
+      const options = shuffleArray(wordOptions);
+
+      const newGuessTheImageGame = new GuessTheImageGame({
+        game: guessTheImageGame.game,
+        user: guessTheImageGame.user,
+        deck: deck._id,
+        image: image,
+        options: options,
+        correctAnswer: correctAnswer,
+        selectedAnswer: "",
+        status: "inProgress",
+        duration: guessTheImageGame.duration,
       });
 
-    const randomIndex = Math.floor(Math.random() * images.length);
-    const image = images[randomIndex];
-    const correctAnswer = words[randomIndex];
-
-    const wordOptions = [correctAnswer];
-    while (wordOptions.length < 4) {
-      const randomWordIndex = Math.floor(Math.random() * words.length);
-      const randomWord = words[randomWordIndex];
-      if (!wordOptions.includes(randomWord)) {
-        wordOptions.push(randomWord);
-      }
+      await newGuessTheImageGame.save();
+      return res.status(201).json({
+        gameId: guessTheImageGame.game,
+        guessTheImageGameId: newGuessTheImageGame._id,
+        currentGame: game.currentGameCount,
+        totalGames: maxGames,
+      });
     }
-
-    const options = shuffleArray(wordOptions);
-
-    const newGuessTheImageGame = new GuessTheImageGame({
-      game: guessTheImageGame.game,
-      user: guessTheImageGame.user,
-      deck: deck._id,
-      image: image,
-      options: options,
-      correctAnswer: correctAnswer,
-      selectedAnswer: "",
-      status: "inProgress",
-      timeTaken: 0,
-    });
-
-    await newGuessTheImageGame.save();
-    return res.status(201).json({
-      gameId: guessTheImageGame.game,
-      guessTheImageGameId: newGuessTheImageGame._id,
-    });
   } catch (error: any) {
     handleValidationErrors(error, res);
   }

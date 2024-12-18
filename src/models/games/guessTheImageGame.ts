@@ -38,7 +38,11 @@ const guessTheImageGameSchema = new Schema({
     default: "inProgress",
     enum: ["inProgress", "completed"],
   },
-  timeTaken: {
+  duration: {
+    type: Number,
+    required: [true, "La duración es obligatoria"],
+  },
+  score: {
     type: Number,
     default: 0,
   },
