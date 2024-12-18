@@ -34,7 +34,15 @@ const wordSearchGameSchema = new Schema({
     type: [String],
     default: [],
   },
-  timeTaken: {
+  duration: {
+    type: Number,
+    required: [true, "La duración es obligatoria"],
+  },
+  maxWords: {
+    type: Number,
+    required: [true, "El número máximo de palabras es obligatorio"],
+  },
+  score: {
     type: Number,
     default: 0,
   },

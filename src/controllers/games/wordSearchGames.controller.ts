@@ -1,6 +1,6 @@
 import { Response, Request } from "express";
 
-//local imports
+// local imports
 import { Game } from "../../models/game";
 import { WordSearchGame } from "../../models/games/wordSearchGame";
 import { User } from "../../models/user";
@@ -38,7 +38,7 @@ export const createWordSearchGame = async (
   res: Response
 ) => {
   try {
-    const { deckId } = req.body;
+    const { deckId, settings } = req.body;
     const userId = req.user?.id;
 
     if (!deckId)
@@ -55,40 +55,31 @@ export const createWordSearchGame = async (
       user.gamesCompletedByType = new Map<string, number>();
 
     const gameType = "WordSearchGame";
-    const currentCount = user.gamesCompletedByType.get(gameType) || 0;
+    const maxGames = settings.totalGames;
 
-    const maxGames = 25;
-
-    if (currentCount >= maxGames) {
-      return res.status(400).json({
-        message: `Ya has completado ${maxGames} juegos de Sopa de Letras. Por favor, reinicia el contador para comenzar una nueva serie.`,
-      });
+    // Validar el valor de maxWords
+    if (settings.maxWords < 2 || settings.maxWords > 4) {
+      return res.status(400).json({ message: "El valor de maxWords debe estar entre 2 y 4" });
     }
 
-    let game = await Game.findOne({
+    // Validar el valor de totalGames
+    if (maxGames < 1 || maxGames > 25) {
+      return res.status(400).json({ message: "El valor de totalGames debe estar entre 1 y 25" });
+    }
+
+    // Crear el juego principal
+    const game = new Game({
+      name: "Sopa de letras",
       user: userId,
       gameType: gameType,
-      _id: {
-        $in: await WordSearchGame.find({
-          user: userId,
-          status: "inProgress",
-        }).distinct("game"),
-      },
+      currentGameCount: 0, // Inicializar el contador de partidas en 0
+      totalGames: maxGames,
     });
+    await game.save();
+    user.games.push(game._id);
+    await user.save();
 
-    if (game) {
-      const wordSearchGame = await WordSearchGame.findOne({
-        game: game._id,
-        user: userId,
-        status: "inProgress",
-      });
-
-      return res.status(200).json({
-        message: "Ya tienes una sopa de letras en progreso",
-        wordSearchGameId: wordSearchGame?._id,
-      });
-    }
-
+    // Crear la primera instancia de sopa de letras
     const deck = await Deck.findById(deckId).populate("cards");
     if (!deck) return res.status(404).json({ message: "Mazo no encontrado" });
 
@@ -104,39 +95,31 @@ export const createWordSearchGame = async (
           "El mazo no tiene suficientes palabras válidas para crear una nueva sopa de letras",
       });
 
-    const selectedWords = getRandomWords(words, 4);
-    const { grid, error } = generateWordSearchGrid(selectedWords, 10);
+    const selectedWords = getRandomWords(words, settings.maxWords);
+    const { grid, error } = generateWordSearchGrid(selectedWords, 10, settings.maxWords);
 
     if (error) {
       return res.status(400).json({ message: error });
     }
 
-    game = new Game({
-      name: "Sopa de letras",
-      user: userId,
-      gameType: gameType,
-    });
-
-    await game.save();
-
-    user.games.push(game._id);
-    await user.save();
-
-    const newWordSearchGame = new WordSearchGame({
+    const wordSearchGame = new WordSearchGame({
       game: game._id,
       user: userId,
-      deck: deck._id,
-      grid: grid,
+      deck: deckId,
+      grid,
       words: selectedWords,
+      duration: settings.duration,
+      maxWords: settings.maxWords,
       status: "inProgress",
-      timeTaken: 0,
-      foundWords: [],
     });
-    await newWordSearchGame.save();
 
-    return res
-      .status(201)
-      .json({ gameId: game._id, wordSearchGameId: newWordSearchGame._id });
+    await wordSearchGame.save();
+
+    // Incrementar el contador de partidas del juego
+    game.currentGameCount += 1;
+    await game.save();
+
+    return res.status(201).json({ message: "Juego creado con éxito", game, wordSearchGame, currentGame: game.currentGameCount, totalGames: maxGames });
   } catch (error: any) {
     handleValidationErrors(error, res);
   }
@@ -184,76 +167,70 @@ export const completeCurrentGame = async (
     const currentCount = user.gamesCompletedByType.get(gameType) || 0;
     const totalCount = user.totalGamesCompletedByType.get(gameType) || 0;
 
-    const maxGames = 25;
-    if (currentCount >= maxGames) {
-      return res.status(200).json({
-        message: `¡Felicidades! Has completado ${maxGames} ${gameType}. Puedes comenzar una nueva serie si deseas jugar de nuevo.`,
-      });
+    const game = await Game.findById(wordSearchGame.game);
+    if (!game) {
+      return res.status(404).json({ message: "Juego no encontrado" });
     }
+
+    const maxGames = game.totalGames;
 
     user.gamesCompletedByType.set(gameType, currentCount + 1);
     user.totalGamesCompletedByType.set(gameType, totalCount + 1);
     await user.save();
 
-    let gameInProgress = await WordSearchGame.findOne({
+    if (game.currentGameCount >= maxGames) {
+      // No permitir crear más partidas
+      return res.status(200).json({
+        message: `¡Felicidades! Has completado ${maxGames} ${gameType}. No puedes crear más partidas en esta serie.`,
+        currentGame: game.currentGameCount,
+        totalGames: maxGames
+      });
+    }
+
+    // Incrementar el contador de partidas del juego
+    game.currentGameCount += 1;
+    await game.save();
+
+    const deck = await Deck.findById(wordSearchGame.deck).populate("cards");
+    if (!deck) return res.status(404).json({ message: "Mazo no encontrado" });
+
+    const words = deck.cards
+      .flatMap((card: any) =>
+        card.frontSide.text.map((textObj: any) => textObj.content.toUpperCase())
+      )
+      .filter((text: string) => text.length <= 9);
+
+    if (words.length < 5)
+      return res.status(400).json({
+        message:
+          "El mazo no tiene suficientes palabras válidas para crear una nueva sopa de letras",
+      });
+
+    const selectedWords = getRandomWords(words, wordSearchGame.maxWords);
+    const { grid, error } = generateWordSearchGrid(selectedWords, 10, wordSearchGame.maxWords);
+
+    if (error) {
+      return res.status(400).json({ message: error });
+    }
+
+    const newWordSearchGame = new WordSearchGame({
+      game: wordSearchGame.game,
       user: userId,
+      deck: wordSearchGame.deck,
+      grid,
+      words: selectedWords,
+      duration: wordSearchGame.duration,
+      maxWords: wordSearchGame.maxWords,
       status: "inProgress",
     });
 
-    if (gameInProgress) {
-      return res.status(400).json({
-        message: "Ya tienes un Juego de Sopa de Letras en progreso",
-        guessTheImageGameId: gameInProgress._id,
-      });
-    }
-
-
-    if (currentCount + 1 < maxGames) {
-      const deck = await Deck.findById(wordSearchGame.deck).populate("cards");
-      if (!deck) {
-        return res.status(404).json({ error: "Mazo no encontrado" });
-      }
-
-      const words = deck.cards
-        .flatMap((card: any) =>
-          card.frontSide.text.map((textObj: any) =>
-            textObj.content.toUpperCase()
-          )
-        )
-        .filter((text: string) => text.length <= 9);
-      if (words.length < 4) {
-        return res.status(400).json({
-          error:
-            "El mazo no tiene suficientes palabras válidas para crear una nueva sopa de letras",
-        });
-      }
-
-      const selectedWords = getRandomWords(words, 4);
-      const { grid, error } = generateWordSearchGrid(selectedWords, 10);
-
-      if (error) {
-        return res.status(400).json({ message: error });
-      }
-
-      const newWordSearchGame = new WordSearchGame({
-        game: wordSearchGame.game,
-        user: wordSearchGame.user,
-        deck: deck._id,
-        grid: grid,
-        words: selectedWords,
-        status: "inProgress",
-        timeTaken: 0,
-      });
-      await newWordSearchGame.save();
-      return res.status(201).json({
-        gameId: wordSearchGame.game,
-        wordSearchGameId: newWordSearchGame._id,
-      });
-    } else {
-      return res.status(200).json({
-        message: `Has alcanzado el límite de ${maxGames} juegos de Sopa de Letras. Puedes reiniciar el contador para comenzar de nuevo.`,
-      });
-    }
+    await newWordSearchGame.save();
+    return res.status(201).json({
+      gameId: wordSearchGame.game,
+      wordSearchGameId: newWordSearchGame._id,
+      currentGame: game.currentGameCount,
+      totalGames: maxGames
+    });
   } catch (error: any) {
     handleValidationErrors(error, res);
   }
@@ -280,38 +257,6 @@ const completeGamewordSearchGame = async (
 ) => {
   wordSearchGame.status = "completed";
   await wordSearchGame.save();
-};
-
-export const resetGamesCompletedByType = async (
-  req: CustomRequest,
-  res: Response
-) => {
-  try {
-    const userId = req.user?.id;
-    const { gameType } = req.body;
-
-    if (!userId) {
-      return res.status(401).json({ error: "Usuario no autenticado" });
-    }
-
-    if (!gameType) {
-      return res.status(400).json({ error: "El tipo de juego es obligatorio" });
-    }
-
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ error: "Usuario no encontrado" });
-    }
-
-    user.gamesCompletedByType.set(gameType, 0);
-    await user.save();
-
-    return res.status(200).json({
-      message: `El contador de juegos completados se ha reiniciado para juegos de ${gameType}. Puedes comenzar una nueva serie ahora.`,
-    });
-  } catch (error: any) {
-    return res.status(500).json({ message: error.message });
-  }
 };
 
 export const deleteWordSearchGame = async (
