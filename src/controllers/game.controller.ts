@@ -3,6 +3,8 @@ import { Request, Response } from "express";
 // local imports
 import { Game } from "../models/game";
 import { WordSearchGame } from "../models/games/wordSearchGame";
+import { HangmanGame } from "../models/games/hangmanGame";
+import { GuessTheImageGame } from "../models/games/guessTheImageGame";
 import { User } from "../models/user";
 
 export const getGames = async (_req: Request, res: Response) => {
@@ -37,12 +39,18 @@ export const deleteGame = async (req: Request, res: Response) => {
     }
 
     if (game.gameType === "WordSearchGame") {
-      await WordSearchGame.deleteOne({ game: id });
+      await WordSearchGame.deleteMany({ game: id });
+    } else if (game.gameType === "HangmanGame") {
+      await HangmanGame.deleteMany({ game: id });
+    } else if (game.gameType === "GuessTheImageGame") {
+      await GuessTheImageGame.deleteMany({ game: id });
     }
 
     await User.updateMany({ games: id }, { $pull: { games: id } });
 
-    return res.status(204).json({ message: "Juego eliminado" });
+    return res
+      .status(204)
+      .json({ message: "Juego y partidas asociadas eliminados" });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
   }

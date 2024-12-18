@@ -19,8 +19,9 @@ const gameSchema = new Schema({
     required: [true, "El tipo de juego es obligatorio"],
     enum: ["WordSearchGame", "GuessTheWordGame", "GuessTheImageGame","GuessTheTextGame", "MemoryGame", "StrokeOrderGame", "MatchingGame", "HangmanGame", "SpeedMemoryWordGame", "SpeedMemoryImageGame"],
   },
+  currentGameCount: { type: Number, default: 0 },
+  totalGames: { type: Number, required: true },
   user: { type: Schema.Types.ObjectId, ref: "User", required: true },
-  
 });
 
 export const Game = mongoose.model("Game", gameSchema, "games");
