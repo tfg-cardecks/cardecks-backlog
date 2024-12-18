@@ -1,6 +1,6 @@
 import { Response, Request } from "express";
 
-//local imports
+// local imports
 import { Game } from "../../models/game";
 import { HangmanGame } from "../../models/games/hangmanGame";
 import { User } from "../../models/user";
@@ -9,9 +9,11 @@ import { handleValidationErrors } from "../../validators/validate";
 import { CustomRequest } from "../../interfaces/customRequest";
 
 function cleanWord(word: string): string {
-  const withoutSpaces = word.replace(/\s+/g, '');
-  const withoutAccents = withoutSpaces.normalize("NFD").replace(/[\u0300-\u036f]/g, '');
-  return withoutAccents.replace(/[^A-Z]/gi, '').toUpperCase();
+  const withoutSpaces = word.replace(/\s+/g, "");
+  const withoutAccents = withoutSpaces
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+  return withoutAccents.replace(/[^A-Z]/gi, "").toUpperCase();
 }
 
 export const getHangmanGames = async (_req: Request, res: Response) => {
@@ -39,7 +41,7 @@ export const getHangmanGameById = async (req: CustomRequest, res: Response) => {
 
 export const createHangmanGame = async (req: CustomRequest, res: Response) => {
   try {
-    const { deckId } = req.body;
+    const { deckId, settings } = req.body;
     const userId = req.user?.id;
 
     if (!deckId)
@@ -56,39 +58,26 @@ export const createHangmanGame = async (req: CustomRequest, res: Response) => {
       user.gamesCompletedByType = new Map<string, number>();
 
     const gameType = "HangmanGame";
-    const currentCount = user.gamesCompletedByType.get(gameType) || 0;
+    const maxGames = settings.totalGames;
 
-    const maxGames = 25;
-
-    if (currentCount >= maxGames) {
-      return res.status(400).json({
-        message: `Ya has completado ${maxGames} juegos de Ahorcado. Por favor, reinicia el contador para comenzar una nueva serie.`,
-      });
+    // Validar el valor de totalGames
+    if (maxGames < 1 || maxGames > 25) {
+      return res
+        .status(400)
+        .json({ message: "El valor de totalGames debe estar entre 1 y 25" });
     }
 
-    let game = await Game.findOne({
+    let game = new Game({
+      name: "Juego de Ahorcado",
       user: userId,
       gameType: gameType,
-      _id: {
-        $in: await HangmanGame.find({
-          user: userId,
-          status: "inProgress",
-        }).distinct("game"),
-      },
+      currentGameCount: 0, // Inicializar el contador de partidas en 0
+      totalGames: maxGames,
     });
 
-    if (game) {
-      const hangmanGame = await HangmanGame.findOne({
-        game: game._id,
-        user: userId,
-        status: "inProgress",
-      });
-
-      return res.status(200).json({
-        message: "Ya tienes un Juego del Ahorcado en progreso",
-        hangmanGameId: hangmanGame?._id,
-      });
-    }
+    await game.save();
+    user.games.push(game._id);
+    await user.save();
 
     const deck = await Deck.findById(deckId).populate("cards");
     if (!deck) return res.status(404).json({ message: "Mazo no encontrado" });
@@ -108,44 +97,45 @@ export const createHangmanGame = async (req: CustomRequest, res: Response) => {
           "El mazo no tiene suficientes palabras válidas para crear un nuevo Juego del Ahorcado",
       });
 
-    const selectedWords = [];
-    while (selectedWords.length < 5) {
-      const randomIndex = Math.floor(Math.random() * words.length);
-      selectedWords.push(words[randomIndex]);
-    }
+    const selectedWords = getRandomWords(words, 5);
 
-    game = new Game({
-      name: "Juego de Ahorcado",
-      user: userId,
-      gameType: "HangmanGame",
-    });
-
-    await game.save();
-
-    user.games.push(game._id);
-    await user.save();
-
-    const newHangmanGame = new HangmanGame({
+    const hangmanGame = new HangmanGame({
       game: game._id,
       user: userId,
       deck: deck._id,
       words: selectedWords,
       currentWordIndex: 0,
+      currentWord: selectedWords[0],
       status: "inProgress",
       foundLetters: [],
       wrongLetters: [],
-      timeTaken: 0,
+      duration: settings.duration,
+      score: 0,
     });
 
-    await newHangmanGame.save();
+    await hangmanGame.save();
 
+    // Incrementar el contador de partidas del juego
+    game.currentGameCount += 1;
+    await game.save();
     return res
       .status(201)
-      .json({ gameId: game._id, hangmanGameId: newHangmanGame._id });
+      .json({
+        message: "Juego creado con éxito",
+        game,
+        hangmanGame,
+        currentGame: game.currentGameCount,
+        totalGames: maxGames,
+      });
   } catch (error: any) {
     handleValidationErrors(error, res);
   }
 };
+
+function getRandomWords(words: string[], count: number): string[] {
+  const shuffled = words.sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+}
 
 export const guessLetter = async (req: CustomRequest, res: Response) => {
   try {
@@ -183,6 +173,8 @@ export const guessLetter = async (req: CustomRequest, res: Response) => {
       ) {
         hangmanGame.currentWordIndex += 1;
         hangmanGame.foundLetters = [];
+        hangmanGame.currentWord =
+          hangmanGame.words[hangmanGame.currentWordIndex] || "";
         if (hangmanGame.currentWordIndex >= hangmanGame.words.length) {
           hangmanGame.status = "completed";
         }
@@ -207,7 +199,6 @@ export const completeCurrentGame = async (
     const {
       countAsCompleted = true,
       forceComplete = false,
-      timeTaken,
       guessedLetters,
       wrongLetters,
     } = req.body;
@@ -216,8 +207,12 @@ export const completeCurrentGame = async (
     if (!hangmanGame)
       return res.status(404).json({ error: "Juego de Ahorcado no encontrado" });
 
+    const game = await Game.findById(hangmanGame.game);
+    if (!game) {
+      return res.status(404).json({ message: "Juego no encontrado" });
+    }
+
     if (forceComplete) {
-      hangmanGame.timeTaken = timeTaken;
       hangmanGame.status = "completed";
       await hangmanGame.save();
       return res.status(200).json({ message: "Juego completado forzosamente" });
@@ -239,7 +234,6 @@ export const completeCurrentGame = async (
 
     if (countAsCompleted) {
       hangmanGame.status = "completed";
-      hangmanGame.timeTaken = timeTaken;
       await hangmanGame.save();
 
       const user = await User.findById(userId);
@@ -254,27 +248,24 @@ export const completeCurrentGame = async (
       const currentCount = user.gamesCompletedByType.get(gameType) || 0;
       const totalCount = user.totalGamesCompletedByType.get(gameType) || 0;
 
-      const maxGames = 25;
-      if (currentCount >= maxGames)
-        return res.status(200).json({
-          message: `¡Felicidades! Has completado ${maxGames} ${gameType}. Puedes comenzar una nueva serie si deseas jugar de nuevo.`,
-        });
+      const maxGames = game.totalGames;
 
       user.gamesCompletedByType.set(gameType, currentCount + 1);
       user.totalGamesCompletedByType.set(gameType, totalCount + 1);
       await user.save();
-    }
 
-    let gameInProgress = await HangmanGame.findOne({
-      user: userId,
-      status: "inProgress",
-    });
+      if (game.currentGameCount >= maxGames) {
+        // No permitir crear más partidas
+        return res.status(200).json({
+          message: `¡Felicidades! Has completado ${maxGames} ${gameType}. No puedes crear más partidas en esta serie.`,
+          currentGame: game.currentGameCount,
+          totalGames: maxGames,
+        });
+      }
 
-    if (gameInProgress) {
-      return res.status(400).json({
-        message: "Ya tienes un Juego del Ahorcado en progreso",
-        guessTheImageGameId: gameInProgress._id,
-      });
+      // Incrementar el contador de partidas del juego
+      game.currentGameCount += 1;
+      await game.save();
     }
 
     const deck = await Deck.findById(hangmanGame.deck).populate("cards");
@@ -295,11 +286,7 @@ export const completeCurrentGame = async (
           "El mazo no tiene suficientes palabras válidas para crear un nuevo Juego del Ahorcado",
       });
 
-    const selectedWords = [];
-    while (selectedWords.length < 5) {
-      const randomIndex = Math.floor(Math.random() * words.length);
-      selectedWords.push(words[randomIndex]);
-    }
+    const selectedWords = getRandomWords(words, 5);
 
     const newHangmanGame = new HangmanGame({
       game: hangmanGame.game,
@@ -307,15 +294,19 @@ export const completeCurrentGame = async (
       deck: deck._id,
       words: selectedWords,
       currentWordIndex: 0,
+      currentWord: selectedWords[0],
       status: "inProgress",
       foundLetters: [],
       wrongLetters: [],
-      timeTaken: 0,
+      duration: hangmanGame.duration,
+      score: 0,
     });
     await newHangmanGame.save();
     return res.status(201).json({
       gameId: hangmanGame.game,
       hangmanGameId: newHangmanGame._id,
+      currentGame: game.currentGameCount,
+      totalGames: game.totalGames
     });
   } catch (error: any) {
     handleValidationErrors(error, res);

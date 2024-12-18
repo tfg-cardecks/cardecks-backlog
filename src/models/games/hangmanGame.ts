@@ -46,13 +46,17 @@ const hangmanGameSchema = new Schema({
     type: String,
     default: "",
   },
-  timeTaken: {
-    type: Number,
-    default: 0,
-  },
   completed: {
     type: Boolean,
     default: false,
+  },
+  duration: {
+    type: Number,
+    required: [true, "La duración es obligatoria"],
+  },
+  score: {
+    type: Number,
+    default: 0,
   },
 });
 
