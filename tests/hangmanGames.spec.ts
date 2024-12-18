@@ -85,8 +85,8 @@ beforeAll(async () => {
     .set("Authorization", token)
     .send({ ...validHangmanGame, deckId });
 
-  hangmanGameId = response2.body.hangmanGameId;
-  gameId = response2.body.gameId;
+  hangmanGameId = response2.body.hangmanGame._id;
+  gameId = response2.body.game._id;
 });
 
 describe("HangmanGame API", () => {
@@ -96,18 +96,6 @@ describe("HangmanGame API", () => {
       .set("Authorization", token);
     expect(response.status).toBe(200);
     expect(response.body).toBeInstanceOf(Array);
-  });
-
-  it("should return a message indicating a hangman game is already in progress", async () => {
-    const response = await request(app)
-      .post(`${API_BASE_URL}/hangmanGames`)
-      .set("Authorization", token)
-      .send({ deckId });
-
-    expect(response.status).toBe(200);
-    expect(response.body.message).toBe(
-      "Ya tienes un Juego del Ahorcado en progreso"
-    );
   });
 
   it("should get a hangman game by ID", async () => {
@@ -166,7 +154,6 @@ describe("HangmanGame API", () => {
         guessedLetters,
         wrongLetters: [],
         countAsCompleted: true,
-        timeTaken: 10,
       });
 
     expect(response.status).toBe(201);
@@ -182,7 +169,6 @@ describe("HangmanGame API", () => {
         guessedLetters: ["K", "I"],
         wrongLetters: [],
         countAsCompleted: true,
-        timeTaken: 10,
       });
 
     expect(response.status).toBe(400);
@@ -199,7 +185,6 @@ describe("HangmanGame API", () => {
         guessedLetters: ["K", "I"],
         wrongLetters: [],
         forceComplete: true,
-        timeTaken: 10,
       });
 
     expect(response.status).toBe(200);
@@ -220,49 +205,14 @@ describe("HangmanGame API", () => {
     expect(response.status).toBe(404);
   });
 
-  it("should reset games completed by type", async () => {
+  it("should create a new hangman game", async () => {
     const response = await request(app)
-      .patch(`${API_BASE_URL}/resetGamesCompletedByType`)
-      .set("Authorization", token)
-      .send({ gameType: "HangmanGame" });
-
-    expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty("message");
-  });
-
-  it("should return an error if a hangman game is already in progress", async () => {
-
-    const createNew = await request(app)
       .post(`${API_BASE_URL}/hangmanGames`)
       .set("Authorization", token)
-      .send({ deckId });
-
-    const gameResponse = await request(app)
-      .get(`${API_BASE_URL}/hangmanGame/${createNew.body.hangmanGameId}`)
-      .set("Authorization", token);
-
-    const currentWord =
-      gameResponse.body.words[gameResponse.body.currentWordIndex];
-    const uniqueLetters = new Set(currentWord.split(""));
-    const guessedLetters = Array.from(uniqueLetters);
-
-    await request(app)
-      .post(
-        `${API_BASE_URL}/currentHangmanGame/${createNew.body.hangmanGameId}`
-      )
-      .set("Authorization", token)
-      .send({ guessedLetters, timeTaken: 10 });
-
-    const response = await request(app)
-      .post(
-        `${API_BASE_URL}/currentHangmanGame/${createNew.body.hangmanGameId}`
-      )
-      .set("Authorization", token)
-      .send({ guessedLetters, timeTaken: 10 });
-
-    expect(response.status).toBe(400);
-    expect(response.body.message).toBe(
-      "Ya tienes un Juego del Ahorcado en progreso"
-    );
+      .send({ ...validHangmanGame, deckId });
+    expect(response.status).toBe(201);
+    expect(response.body).toHaveProperty("message", "Juego creado con éxito");
+    expect(response.body).toHaveProperty("game");
+    expect(response.body).toHaveProperty("hangmanGame");
   });
 });

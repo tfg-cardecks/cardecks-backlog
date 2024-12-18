@@ -84,8 +84,8 @@ beforeAll(async () => {
     .set("Authorization", token)
     .send({ ...validGuessTheImageGame, deckId });
 
-  guessTheImageGameId = response2.body.guessTheImageGameId;
-  gameId = response2.body.gameId;
+  guessTheImageGameId = response2.body.guessTheImageGame._id;
+  gameId = response2.body.game._id;
 });
 
 describe("GuessTheImageGame API", () => {
@@ -95,18 +95,6 @@ describe("GuessTheImageGame API", () => {
       .set("Authorization", token);
     expect(response.status).toBe(200);
     expect(response.body).toBeInstanceOf(Array);
-  });
-
-  it("should return a message indicating a guess the image game is already in progress", async () => {
-    const response = await request(app)
-      .post(`${API_BASE_URL}/guessTheImageGames`)
-      .set("Authorization", token)
-      .send({ deckId });
-
-    expect(response.status).toBe(200);
-    expect(response.body.message).toBe(
-      "Ya tienes un Juego de Adivinar la Imagen en progreso"
-    );
   });
 
   it("should get a guess the image game by ID", async () => {
@@ -141,7 +129,7 @@ describe("GuessTheImageGame API", () => {
     const response = await request(app)
       .post(`${API_BASE_URL}/currentGuessTheImageGame/${guessTheImageGameId}`)
       .set("Authorization", token)
-      .send({ selectedAnswer: correctAnswer, timeTaken: 10 });
+      .send({ selectedAnswer: correctAnswer });
 
     expect(response.status).toBe(201);
     expect(response.body).toHaveProperty("gameId");
@@ -152,7 +140,7 @@ describe("GuessTheImageGame API", () => {
     const response = await request(app)
       .post(`${API_BASE_URL}/currentGuessTheImageGame/${guessTheImageGameId}`)
       .set("Authorization", token)
-      .send({ selectedAnswer: "WRONG_ANSWER", timeTaken: 10 });
+      .send({ selectedAnswer: "WRONG_ANSWER" });
 
     expect(response.status).toBe(400);
     expect(response.body.error).toBe(
@@ -167,7 +155,6 @@ describe("GuessTheImageGame API", () => {
       .send({
         selectedAnswer: "WRONG_ANSWER",
         forceComplete: true,
-        timeTaken: 10,
       });
 
     expect(response.status).toBe(200);
@@ -186,48 +173,5 @@ describe("GuessTheImageGame API", () => {
       .delete(`${API_BASE_URL}/guessTheImageGame/66fbe37b9d600a318c38ab12`)
       .set("Authorization", token);
     expect(response.status).toBe(404);
-  });
-
-  it("should reset games completed by type", async () => {
-    const response = await request(app)
-      .patch(`${API_BASE_URL}/resetGamesCompletedByType`)
-      .set("Authorization", token)
-      .send({ gameType: "GuessTheImageGame" });
-
-    expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty("message");
-  });
-
-  it("should return an error if a guess the image game is already in progress", async () => {
-    const createNew = await request(app)
-      .post(`${API_BASE_URL}/guessTheImageGames`)
-      .set("Authorization", token)
-      .send({ deckId });
-
-    const gameResponse = await request(app)
-      .get(
-        `${API_BASE_URL}/guessTheImageGame/${createNew.body.guessTheImageGameId}`
-      )
-      .set("Authorization", token);
-
-    const correctAnswer = gameResponse.body.correctAnswer;
-    await request(app)
-      .post(
-        `${API_BASE_URL}/currentGuessTheImageGame/${createNew.body.guessTheImageGameId}`
-      )
-      .set("Authorization", token)
-      .send({ selectedAnswer: correctAnswer, timeTaken: 10 });
-
-    const response = await request(app)
-      .post(
-        `${API_BASE_URL}/currentGuessTheImageGame/${createNew.body.guessTheImageGameId}`
-      )
-      .set("Authorization", token)
-      .send({ selectedAnswer: correctAnswer, timeTaken: 10 });
-
-    expect(response.status).toBe(400);
-    expect(response.body.message).toBe(
-      "Ya tienes un Juego de Adivinar la Imagen en progreso"
-    );
   });
 });

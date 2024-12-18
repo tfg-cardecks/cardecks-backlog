@@ -1,15 +1,9 @@
 // Datos válidos para un juego de Hangman
 export const validHangmanGame = {
-  game: "66fdc22fedf080aa5810c6c2",
-  user: "66fbdb519d600a318c38aa6c",
-  deck: "66fbe3299d600a318c38aaed",
-  words: ["KIKO", "PATO", "FAISAN", "GATO", "LILIL"],
-  currentWordIndex: 0,
-  foundLetters: [],
-  wrongLetters: [],
-  status: "inProgress",
-  timeTaken: 0,
-  completed: false,
+  settings: {
+    totalGames: 5,
+    duration: 60,
+  },
 };
 
 // Datos inválidos para un juego de Hangman
@@ -21,7 +15,6 @@ export const invalidHangmanGames = [
     deck: "66fbe3299d600a318c38aaed",
     words: ["KIKO", "PATO", "FAISAN", "GATO", "LILIL"],
     status: "inProgress",
-    timeTaken: 0,
     completed: false,
   },
   // Tipos de datos incorrectos
@@ -29,25 +22,12 @@ export const invalidHangmanGames = [
     game: "66fdc22fedf080aa5810c6c1",
     user: "66fbdb519d600a318c38aa6c",
     deck: "66fbe3299d600a318c38aaed",
-    words: "not an array",
-    currentWordIndex: "zero",
-    foundLetters: "not an array",
-    wrongLetters: "not an array",
-    status: 123,
-    timeTaken: "zero",
-    completed: "yes",
-  },
-  {
-    game: "66fdc22fedf080aa5810c6c1",
-    user: "66fbdb519d600a318c38aa6c",
-    deck: "66fbe3299d600a318c38aaed",
-    words: ["KIKO", "PATO", "FAISAN", "GATO", "LILIL"],
-    currentWordIndex: 0,
-    foundLetters: [],
-    wrongLetters: [],
-    status: "inProgress",
-    timeTaken: -1,
-    completed: true,
+    words: "not an array", // should be an array
+    currentWordIndex: "zero", // should be a number
+    foundLetters: "not an array", // should be an array
+    wrongLetters: "not an array", // should be an array
+    status: 123, // should be a string
+    completed: "yes", // should be a boolean
   },
 ];
 

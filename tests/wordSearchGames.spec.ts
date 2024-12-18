@@ -84,8 +84,8 @@ beforeAll(async () => {
     .set("Authorization", token)
     .send({ ...validWordSearchGame, deckId });
 
-  wordSearchGameId = response2.body.wordSearchGameId;
-  gameId = response2.body.gameId;
+  wordSearchGameId = response2.body.wordSearchGame._id;
+  gameId = response2.body.game._id;
 });
 
 describe("WordSearchGame API", () => {
@@ -95,18 +95,6 @@ describe("WordSearchGame API", () => {
       .set("Authorization", token);
     expect(response.status).toBe(200);
     expect(response.body).toBeInstanceOf(Array);
-  });
-
-  it("should return a message indicating a word search game is already in progress", async () => {
-    const response = await request(app)
-      .post(`${API_BASE_URL}/wordSearchGames`)
-      .set("Authorization", token)
-      .send({ deckId });
-
-    expect(response.status).toBe(200);
-    expect(response.body.message).toBe(
-      "Ya tienes una sopa de letras en progreso"
-    );
   });
 
   it("should get a word search game by ID", async () => {
@@ -180,45 +168,35 @@ describe("WordSearchGame API", () => {
     expect(response.status).toBe(404);
   });
 
-  it("should reset games completed by type", async () => {
+  it("should return an error for invalid settings (maxWords out of range)", async () => {
+    const invalidSettings = {
+      ...validWordSearchGame,
+      settings: { ...validWordSearchGame.settings, maxWords: 5 },
+    };
     const response = await request(app)
-      .patch(`${API_BASE_URL}/resetGamesCompletedByType`)
-      .set("Authorization", token)
-      .send({ gameType: "WordSearchGame" });
-
-    expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty("message");
-  });
-
-  it("should return an error if a word search game is already in progress", async () => {
-    const createNew = await request(app)
       .post(`${API_BASE_URL}/wordSearchGames`)
       .set("Authorization", token)
-      .send({ deckId });
-
-    const gameResponse = await request(app)
-      .get(`${API_BASE_URL}/wordSearchGame/${createNew.body.wordSearchGameId}`)
-      .set("Authorization", token);
-
-    const foundWords = gameResponse.body.words;
-
-    await request(app)
-      .post(
-        `${API_BASE_URL}/currentWordSearchGame/${createNew.body.wordSearchGameId}`
-      )
-      .set("Authorization", token)
-      .send({ foundWords, timeTaken: 10 });
-
-    const response = await request(app)
-      .post(
-        `${API_BASE_URL}/currentWordSearchGame/${createNew.body.wordSearchGameId}`
-      )
-      .set("Authorization", token)
-      .send({ foundWords, timeTaken: 10 });
+      .send({ ...invalidSettings, deckId });
 
     expect(response.status).toBe(400);
     expect(response.body.message).toBe(
-      "Ya tienes un Juego de Sopa de Letras en progreso"
+      "El valor de maxWords debe estar entre 2 y 4"
+    );
+  });
+
+  it("should return an error for invalid settings (totalGames out of range)", async () => {
+    const invalidSettings = {
+      ...validWordSearchGame,
+      settings: { ...validWordSearchGame.settings, totalGames: 30 },
+    };
+    const response = await request(app)
+      .post(`${API_BASE_URL}/wordSearchGames`)
+      .set("Authorization", token)
+      .send({ ...invalidSettings, deckId });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe(
+      "El valor de totalGames debe estar entre 1 y 25"
     );
   });
 });

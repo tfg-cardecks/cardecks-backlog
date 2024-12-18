@@ -84,8 +84,8 @@ beforeAll(async () => {
     .set("Authorization", token)
     .send({ ...validWordSearchGame, deckId });
 
-  wordSearchGameId = response2.body.wordSearchGameId;
-  gameId = response2.body.gameId;
+  wordSearchGameId = response2.body.wordSearchGame._id;
+  gameId = response2.body.game._id;
 });
 
 describe("Game API", () => {
@@ -121,7 +121,7 @@ describe("Game API", () => {
       .set("Authorization", token);
     expect(response.status).toBe(500);
   });
- 
+
   it("should delete a game by ID", async () => {
     const response = await request(app)
       .delete(`${API_BASE_URL}/game/${gameId}`)

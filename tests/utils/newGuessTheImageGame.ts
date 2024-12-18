@@ -1,6 +1,9 @@
 // Datos válidos para un juego de adivinar la imagen
 export const validGuessTheImageGame = {
-  timeTaken: 0,
+  settings: {
+    totalGames: 5,
+    duration: 60,
+  },
 };
 
 // Datos inválidos para un juego de adivinar la imagen
@@ -15,7 +18,6 @@ export const invalidGuessTheImageGames = [
     correctAnswer: "OPTION1",
     status: "completed",
     selectedAnswer: "OPTION1",
-    timeTaken: 0,
   },
   // Tipos de datos incorrectos
   {
@@ -27,8 +29,8 @@ export const invalidGuessTheImageGames = [
     correctAnswer: 123, // should be a string
     status: 123, // should be a string
     selectedAnswer: 123, // should be a string
-    timeTaken: "zero", // should be a number
   },
+  // Otro conjunto de datos inválidos
   {
     game: "66fdc22fedf080aa5810c6c1",
     user: "66fbdb519d600a318c38aa6c",
@@ -38,7 +40,6 @@ export const invalidGuessTheImageGames = [
     correctAnswer: "OPTION1",
     status: "completed",
     selectedAnswer: "OPTION1",
-    timeTaken: -1, // should be a positive number
   },
 ];
 
