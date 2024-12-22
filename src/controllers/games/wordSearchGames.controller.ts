@@ -23,7 +23,9 @@ export const getWordSearchGameById = async (
   res: Response
 ) => {
   try {
-    const wordSearchGame = await WordSearchGame.findById(req.params.id);
+    const wordSearchGame = await WordSearchGame.findById(
+      req.params.id
+    ).populate("game");
     if (!wordSearchGame) {
       return res.status(404).json({ message: "Sopa de letras no encontrada" });
     }
@@ -57,29 +59,30 @@ export const createWordSearchGame = async (
     const gameType = "WordSearchGame";
     const maxGames = settings.totalGames;
 
-    // Validar el valor de maxWords
     if (settings.maxWords < 2 || settings.maxWords > 4) {
-      return res.status(400).json({ message: "El valor de maxWords debe estar entre 2 y 4" });
+      return res
+        .status(400)
+        .json({ message: "El valor de maxWords debe estar entre 2 y 4" });
     }
 
-    // Validar el valor de totalGames
     if (maxGames < 1 || maxGames > 25) {
-      return res.status(400).json({ message: "El valor de totalGames debe estar entre 1 y 25" });
+      return res
+        .status(400)
+        .json({ message: "El valor de totalGames debe estar entre 1 y 25" });
     }
 
-    // Crear el juego principal
     const game = new Game({
       name: "Sopa de letras",
       user: userId,
       gameType: gameType,
-      currentGameCount: 0, // Inicializar el contador de partidas en 0
+      currentGameCount: 0,
       totalGames: maxGames,
+      completed: false,
     });
     await game.save();
     user.games.push(game._id);
     await user.save();
 
-    // Crear la primera instancia de sopa de letras
     const deck = await Deck.findById(deckId).populate("cards");
     if (!deck) return res.status(404).json({ message: "Mazo no encontrado" });
 
@@ -96,7 +99,11 @@ export const createWordSearchGame = async (
       });
 
     const selectedWords = getRandomWords(words, settings.maxWords);
-    const { grid, error } = generateWordSearchGrid(selectedWords, 10, settings.maxWords);
+    const { grid, error } = generateWordSearchGrid(
+      selectedWords,
+      10,
+      settings.maxWords
+    );
 
     if (error) {
       return res.status(400).json({ message: error });
@@ -115,11 +122,16 @@ export const createWordSearchGame = async (
 
     await wordSearchGame.save();
 
-    // Incrementar el contador de partidas del juego
     game.currentGameCount += 1;
     await game.save();
 
-    return res.status(201).json({ message: "Juego creado con éxito", game, wordSearchGame, currentGame: game.currentGameCount, totalGames: maxGames });
+    return res.status(201).json({
+      message: "Juego creado con éxito",
+      game,
+      wordSearchGame,
+      currentGame: game.currentGameCount,
+      totalGames: maxGames,
+    });
   } catch (error: any) {
     handleValidationErrors(error, res);
   }
@@ -137,7 +149,9 @@ export const completeCurrentGame = async (
   try {
     const { wordSearchGameId } = req.params;
     const userId = req.user?.id;
-    const wordSearchGame = await WordSearchGame.findById(wordSearchGameId);
+    const wordSearchGame = await WordSearchGame.findById(
+      wordSearchGameId
+    ).populate("game");
     if (!wordSearchGame) {
       return res.status(404).json({ error: "Sopa de letras no encontrada" });
     }
@@ -147,7 +161,7 @@ export const completeCurrentGame = async (
       wordSearchGame.foundWords.includes(word)
     );
 
-    if (!allWordsFound) {
+    if (!allWordsFound && req.body.forceComplete) {
       return handleIncompleteGame(req, res, wordSearchGame);
     }
 
@@ -179,15 +193,13 @@ export const completeCurrentGame = async (
     await user.save();
 
     if (game.currentGameCount >= maxGames) {
-      // No permitir crear más partidas
       return res.status(200).json({
-        message: `¡Felicidades! Has completado ${maxGames} ${gameType}. No puedes crear más partidas en esta serie.`,
+        message: `¡Felicidades! Has completado las ${maxGames} partidas de ${gameType}.`,
         currentGame: game.currentGameCount,
-        totalGames: maxGames
+        totalGames: maxGames,
       });
     }
 
-    // Incrementar el contador de partidas del juego
     game.currentGameCount += 1;
     await game.save();
 
@@ -207,7 +219,11 @@ export const completeCurrentGame = async (
       });
 
     const selectedWords = getRandomWords(words, wordSearchGame.maxWords);
-    const { grid, error } = generateWordSearchGrid(selectedWords, 10, wordSearchGame.maxWords);
+    const { grid, error } = generateWordSearchGrid(
+      selectedWords,
+      10,
+      wordSearchGame.maxWords
+    );
 
     if (error) {
       return res.status(400).json({ message: error });
@@ -229,7 +245,7 @@ export const completeCurrentGame = async (
       gameId: wordSearchGame.game,
       wordSearchGameId: newWordSearchGame._id,
       currentGame: game.currentGameCount,
-      totalGames: maxGames
+      totalGames: maxGames,
     });
   } catch (error: any) {
     handleValidationErrors(error, res);
@@ -241,14 +257,30 @@ const handleIncompleteGame = async (
   res: Response,
   wordSearchGame: InstanceType<typeof WordSearchGame>
 ) => {
+  const game = await Game.findById(wordSearchGame.game);
+  if (!game) {
+    return res.status(404).json({ message: "Juego no encontrado" });
+  }
   if (req.body.forceComplete) {
     await completeGamewordSearchGame(wordSearchGame);
-    return res.status(200).json({ message: "Juego completado forzosamente" });
-  } else {
-    return res.status(400).json({
-      error:
-        "Todas las palabras deben ser encontradas o el usuario debe elegir terminar el juego antes de completarlo",
+    return res.status(200).json({
+      message: "Juego completado forzosamente",
+      reason: "forceComplete",
     });
+  } else {
+    if (game.currentGameCount >= game.totalGames) {
+      await completeGamewordSearchGame(wordSearchGame);
+      return res.status(200).json({
+        message: "Juego completado forzosamente",
+        reason: "maxGamesReached",
+      });
+    } else {
+      return res.status(200).json({
+        message: "Juego incompleto",
+        nextGame: true,
+        wordSearchGameId: wordSearchGame._id,
+      });
+    }
   }
 };
 

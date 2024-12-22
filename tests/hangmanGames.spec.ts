@@ -161,22 +161,6 @@ describe("HangmanGame API", () => {
     expect(response.body).toHaveProperty("hangmanGameId");
   }, 3000);
 
-  it("should return an error when not all letters are found", async () => {
-    const response = await request(app)
-      .post(`${API_BASE_URL}/currentHangmanGame/${hangmanGameId}`)
-      .set("Authorization", token)
-      .send({
-        guessedLetters: ["K", "I"],
-        wrongLetters: [],
-        countAsCompleted: true,
-      });
-
-    expect(response.status).toBe(400);
-    expect(response.body.error).toBe(
-      "Todas las letras deben ser encontradas o el usuario debe elegir terminar el juego antes de completarlo"
-    );
-  });
-
   it("should force complete a hangman game", async () => {
     const response = await request(app)
       .post(`${API_BASE_URL}/currentHangmanGame/${hangmanGameId}`)
@@ -190,6 +174,24 @@ describe("HangmanGame API", () => {
     expect(response.status).toBe(200);
     expect(response.body.message).toBe("Juego completado forzosamente");
   });
+
+  it("should complete a hangman game with no letters found", async () => {
+    const guessedLetters: string[] = [];
+
+    const response = await request(app)
+      .post(`${API_BASE_URL}/currentHangmanGame/${hangmanGameId}`)
+      .set("Authorization", token)
+      .send({
+        guessedLetters,
+        wrongLetters: [],
+        countAsCompleted: true,
+      });
+
+    expect(response.status).toBe(201);
+    expect(response.body).toHaveProperty("gameId");
+    expect(response.body).toHaveProperty("hangmanGameId");
+  });
+
 
   it("should delete a hangman game by ID", async () => {
     const response = await request(app)
@@ -214,5 +216,14 @@ describe("HangmanGame API", () => {
     expect(response.body).toHaveProperty("message", "Juego creado con éxito");
     expect(response.body).toHaveProperty("game");
     expect(response.body).toHaveProperty("hangmanGame");
+  });
+
+  it("should return 500 for getting a hangman game with invalid ID format", async () => {
+    const invalidId = "invalidIdFormat";
+    const response = await request(app)
+      .get(`${API_BASE_URL}/hangmanGame/${invalidId}`)
+      .set("Authorization", token);
+
+    expect(response.status).toBe(500);
   });
 });

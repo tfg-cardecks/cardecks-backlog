@@ -63,7 +63,6 @@ export const createGuessTheImageGame = async (
     const gameType = "GuessTheImageGame";
     const maxGames = settings.totalGames;
 
-    // Validar el valor de totalGames
     if (maxGames < 1 || maxGames > 25) {
       return res
         .status(400)
@@ -74,7 +73,7 @@ export const createGuessTheImageGame = async (
       name: "Adivinar la Imagen",
       user: userId,
       gameType: gameType,
-      currentGameCount: 0, // Inicializar el contador de partidas en 0
+      currentGameCount: 0,
       totalGames: maxGames,
     });
 
@@ -144,7 +143,6 @@ export const createGuessTheImageGame = async (
 
     await guessTheImageGame.save();
 
-    // Incrementar el contador de partidas del juego
     game.currentGameCount += 1;
     await game.save();
     return res
@@ -233,15 +231,13 @@ export const completeCurrentGame = async (
       await user.save();
 
       if (game.currentGameCount >= maxGames) {
-        // No permitir crear más partidas
         return res.status(200).json({
-          message: `¡Felicidades! Has completado ${maxGames} ${gameType}. No puedes crear más partidas en esta serie.`,
+          message: `¡Felicidades! Has completado las ${maxGames} partidas de ${gameType}.`,
           currentGame: game.currentGameCount,
           totalGames: maxGames,
         });
       }
 
-      // Incrementar el contador de partidas del juego
       game.currentGameCount += 1;
       await game.save();
 

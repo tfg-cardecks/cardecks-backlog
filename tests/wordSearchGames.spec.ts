@@ -132,18 +132,6 @@ describe("WordSearchGame API", () => {
     expect(response.body).toHaveProperty("wordSearchGameId");
   }, 3000);
 
-  it("should return an error when not all words are found", async () => {
-    const response = await request(app)
-      .post(`${API_BASE_URL}/currentWordSearchGame/${wordSearchGameId}`)
-      .set("Authorization", token)
-      .send({ foundWords: ["WORD1", "WORD2"] });
-
-    expect(response.status).toBe(400);
-    expect(response.body.error).toBe(
-      "Todas las palabras deben ser encontradas o el usuario debe elegir terminar el juego antes de completarlo"
-    );
-  });
-
   it("should force complete a word search game", async () => {
     const response = await request(app)
       .post(`${API_BASE_URL}/currentWordSearchGame/${wordSearchGameId}`)
@@ -198,5 +186,14 @@ describe("WordSearchGame API", () => {
     expect(response.body.message).toBe(
       "El valor de totalGames debe estar entre 1 y 25"
     );
+  });
+
+  it("should return 500 for getting a word search game with invalid ID format", async () => {
+    const invalidId = "invalidIdFormat";
+    const response = await request(app)
+      .get(`${API_BASE_URL}/wordSearchGame/${invalidId}`)
+      .set("Authorization", token);
+
+    expect(response.status).toBe(500);
   });
 });

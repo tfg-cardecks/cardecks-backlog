@@ -21,6 +21,7 @@ const gameSchema = new Schema({
   },
   currentGameCount: { type: Number, default: 0 },
   totalGames: { type: Number, required: true },
+  completed: { type: Boolean, default: false }, 
   user: { type: Schema.Types.ObjectId, ref: "User", required: true },
 });
 

@@ -1,7 +1,7 @@
 export function generateWordSearchGrid(
   words: string[],
   gridSize: number = 10,
-  numWords: number = 4 // Nuevo parámetro para el número de palabras
+  numWords: number = 4
 ): { grid?: string[][]; words?: string[]; error?: string } {
   if (gridSize < 1) {
     return { error: "El tamaño de la cuadrícula debe ser al menos 1." };
@@ -24,7 +24,7 @@ export function generateWordSearchGrid(
     };
   }
 
-  const selectedWords = getRandomWords(validWords, numWords); // Usar el número de palabras proporcionado
+  const selectedWords = getRandomWords(validWords, numWords);
 
   const grid = initializeGrid(gridSize);
   const usedStartPositions = new Set<string>();
@@ -37,7 +37,7 @@ export function generateWordSearchGrid(
 
   fillEmptyCells(grid, gridSize);
 
-  return { grid, words: selectedWords }; // Devolver también las palabras seleccionadas
+  return { grid, words: selectedWords };
 }
 
 function cleanWord(word: string): string | null {

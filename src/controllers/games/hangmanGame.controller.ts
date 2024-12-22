@@ -27,11 +27,9 @@ export const getHangmanGames = async (_req: Request, res: Response) => {
 
 export const getHangmanGameById = async (req: CustomRequest, res: Response) => {
   try {
-    const hangmanGame = await HangmanGame.findById(req.params.id);
+    const hangmanGame = await HangmanGame.findById(req.params.id).populate("game");
     if (!hangmanGame) {
-      return res
-        .status(404)
-        .json({ message: "Juego del Ahorcado no encontrado" });
+      return res.status(404).json({ message: "Juego del Ahorcado no encontrado" });
     }
     return res.status(200).json(hangmanGame);
   } catch (error: any) {
@@ -60,7 +58,6 @@ export const createHangmanGame = async (req: CustomRequest, res: Response) => {
     const gameType = "HangmanGame";
     const maxGames = settings.totalGames;
 
-    // Validar el valor de totalGames
     if (maxGames < 1 || maxGames > 25) {
       return res
         .status(400)
@@ -71,8 +68,9 @@ export const createHangmanGame = async (req: CustomRequest, res: Response) => {
       name: "Juego de Ahorcado",
       user: userId,
       gameType: gameType,
-      currentGameCount: 0, // Inicializar el contador de partidas en 0
+      currentGameCount: 0,
       totalGames: maxGames,
+      completed: false,
     });
 
     await game.save();
@@ -115,7 +113,6 @@ export const createHangmanGame = async (req: CustomRequest, res: Response) => {
 
     await hangmanGame.save();
 
-    // Incrementar el contador de partidas del juego
     game.currentGameCount += 1;
     await game.save();
     return res
@@ -203,19 +200,13 @@ export const completeCurrentGame = async (
       wrongLetters,
     } = req.body;
     const userId = req.user?.id;
-    const hangmanGame = await HangmanGame.findById(hangmanGameId);
+    const hangmanGame = await HangmanGame.findById(hangmanGameId).populate("game");
     if (!hangmanGame)
       return res.status(404).json({ error: "Juego de Ahorcado no encontrado" });
 
     const game = await Game.findById(hangmanGame.game);
     if (!game) {
       return res.status(404).json({ message: "Juego no encontrado" });
-    }
-
-    if (forceComplete) {
-      hangmanGame.status = "completed";
-      await hangmanGame.save();
-      return res.status(200).json({ message: "Juego completado forzosamente" });
     }
 
     hangmanGame.foundLetters = guessedLetters;
@@ -228,7 +219,7 @@ export const completeCurrentGame = async (
       hangmanGame.foundLetters.includes(letter)
     );
 
-    if (!allLettersFound && countAsCompleted) {
+    if (!allLettersFound && forceComplete) {
       return handleIncompleteGame(req, res, hangmanGame);
     }
 
@@ -255,15 +246,17 @@ export const completeCurrentGame = async (
       await user.save();
 
       if (game.currentGameCount >= maxGames) {
-        // No permitir crear más partidas
+        game.completed = true;
+
+        await game.save();
+        await completeAllHangmanGames(game._id.toString());
         return res.status(200).json({
-          message: `¡Felicidades! Has completado ${maxGames} ${gameType}. No puedes crear más partidas en esta serie.`,
+          message: `¡Felicidades! Has completado las ${maxGames} partidas de ${gameType}.`,
           currentGame: game.currentGameCount,
           totalGames: maxGames,
         });
       }
 
-      // Incrementar el contador de partidas del juego
       game.currentGameCount += 1;
       await game.save();
     }
@@ -318,23 +311,45 @@ const handleIncompleteGame = async (
   res: Response,
   hangmanGame: InstanceType<typeof HangmanGame>
 ) => {
+  const game = await Game.findById(hangmanGame.game);
+  if (!game) {
+    return res.status(404).json({ message: "Juego no encontrado" });
+  }
   if (req.body.forceComplete) {
     await completeHangmanGame(hangmanGame);
-    return res.status(200).json({ message: "Juego completado forzosamente" });
-  } else {
-    return res.status(400).json({
-      error:
-        "Todas las letras deben ser encontradas o el usuario debe elegir terminar el juego antes de completarlo",
+    await completeAllHangmanGames(game._id.toString());
+    return res.status(200).json({
+      message: "Juego completado forzosamente",
+      nextGame: true,
+      reason: "forceComplete",
     });
+  } else {
+    if (game.currentGameCount >= game.totalGames) {
+      await completeHangmanGame(hangmanGame);
+      await completeAllHangmanGames(game._id.toString());
+      return res.status(200).json({
+        message: "Juego completado forzosamente",
+        reason: "maxGamesReached",
+      });
+    } else {
+      return res.status(200).json({
+        message: "Juego incompleto",
+        nextGame: true,
+        hangmanGameId: hangmanGame._id,
+      });
+    }
   }
 };
 
 const completeHangmanGame = async (
   hangmanGame: InstanceType<typeof HangmanGame>
 ) => {
-  hangmanGame.completed = true;
   hangmanGame.status = "completed";
   await hangmanGame.save();
+};
+
+const completeAllHangmanGames = async (gameId: string) => {
+  await HangmanGame.updateMany({ game: gameId, status: { $ne: "completed" } }, { status: "completed" });
 };
 
 export const deleteHangmanGame = async (req: CustomRequest, res: Response) => {
@@ -361,7 +376,7 @@ export const deleteHangmanGame = async (req: CustomRequest, res: Response) => {
 
     await Game.findByIdAndDelete(hangmanGame.game);
 
-    if (hangmanGame.completed) {
+    if (hangmanGame.status === "completed") {
       const user = await User.findById(userId);
       if (user) {
         const gameType = "HangmanGame";
