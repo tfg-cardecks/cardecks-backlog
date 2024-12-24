@@ -59,18 +59,6 @@ export const createWordSearchGame = async (
     const gameType = "WordSearchGame";
     const maxGames = settings.totalGames;
 
-    if (settings.maxWords < 2 || settings.maxWords > 4) {
-      return res
-        .status(400)
-        .json({ message: "El valor de maxWords debe estar entre 2 y 4" });
-    }
-
-    if (maxGames < 1 || maxGames > 25) {
-      return res
-        .status(400)
-        .json({ message: "El valor de totalGames debe estar entre 1 y 25" });
-    }
-
     const game = new Game({
       name: "Sopa de letras",
       user: userId,

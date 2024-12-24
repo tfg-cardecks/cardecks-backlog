@@ -17,11 +17,27 @@ const gameSchema = new Schema({
   gameType: {
     type: String,
     required: [true, "El tipo de juego es obligatorio"],
-    enum: ["WordSearchGame", "GuessTheWordGame", "GuessTheImageGame","GuessTheTextGame", "MemoryGame", "StrokeOrderGame", "MatchingGame", "HangmanGame", "SpeedMemoryWordGame", "SpeedMemoryImageGame"],
+    enum: [
+      "WordSearchGame",
+      "GuessTheWordGame",
+      "GuessTheImageGame",
+      "GuessTheTextGame",
+      "MemoryGame",
+      "StrokeOrderGame",
+      "MatchingGame",
+      "HangmanGame",
+      "SpeedMemoryWordGame",
+      "SpeedMemoryImageGame",
+    ],
   },
   currentGameCount: { type: Number, default: 0 },
-  totalGames: { type: Number, required: true },
-  completed: { type: Boolean, default: false }, 
+  totalGames: {
+    type: Number,
+    required: [true, "El total de partidas es obligatorio"],
+    min: [1, "El total de partidas debe ser mayor a 1"],
+    max: [25, "El total de partidas debe ser menor a 25"],
+  },
+  completed: { type: Boolean, default: false },
   user: { type: Schema.Types.ObjectId, ref: "User", required: true },
 });
 

@@ -168,7 +168,7 @@ describe("WordSearchGame API", () => {
 
     expect(response.status).toBe(400);
     expect(response.body.message).toBe(
-      "El valor de maxWords debe estar entre 2 y 4"
+      "EL total de palabras debe estar entre 2 y 4"
     );
   });
 
@@ -184,7 +184,7 @@ describe("WordSearchGame API", () => {
 
     expect(response.status).toBe(400);
     expect(response.body.message).toBe(
-      "El valor de totalGames debe estar entre 1 y 25"
+      "El total de partidas debe ser menor a 25"
     );
   });
 

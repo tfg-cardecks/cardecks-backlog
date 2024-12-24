@@ -1,3 +1,4 @@
+import { max, min } from "moment";
 import mongoose from "mongoose";
 import { Schema } from "mongoose";
 
@@ -37,10 +38,14 @@ const wordSearchGameSchema = new Schema({
   duration: {
     type: Number,
     required: [true, "La duración es obligatoria"],
+    min: [5, "La duración mínima es 5 segundos"],
+    max: [300, "La duración máxima es 300 segundos"],
   },
   maxWords: {
     type: Number,
     required: [true, "El número máximo de palabras es obligatorio"],
+    min: [2, "EL total de palabras debe estar entre 2 y 4"],
+    max: [4, "EL total de palabras debe estar entre 2 y 4"],
   },
   score: {
     type: Number,

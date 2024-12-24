@@ -136,18 +136,6 @@ describe("GuessTheImageGame API", () => {
     expect(response.body).toHaveProperty("guessTheImageGameId");
   }, 3000);
 
-  it("should return an error when the answer is incorrect", async () => {
-    const response = await request(app)
-      .post(`${API_BASE_URL}/currentGuessTheImageGame/${guessTheImageGameId}`)
-      .set("Authorization", token)
-      .send({ selectedAnswer: "WRONG_ANSWER" });
-
-    expect(response.status).toBe(400);
-    expect(response.body.error).toBe(
-      "La respuesta debe ser correcta o el usuario debe elegir terminar el juego antes de completarlo"
-    );
-  });
-
   it("should force complete a guess the image game", async () => {
     const response = await request(app)
       .post(`${API_BASE_URL}/currentGuessTheImageGame/${guessTheImageGameId}`)

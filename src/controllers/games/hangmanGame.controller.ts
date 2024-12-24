@@ -58,12 +58,6 @@ export const createHangmanGame = async (req: CustomRequest, res: Response) => {
     const gameType = "HangmanGame";
     const maxGames = settings.totalGames;
 
-    if (maxGames < 1 || maxGames > 25) {
-      return res
-        .status(400)
-        .json({ message: "El valor de totalGames debe estar entre 1 y 25" });
-    }
-
     let game = new Game({
       name: "Juego de Ahorcado",
       user: userId,

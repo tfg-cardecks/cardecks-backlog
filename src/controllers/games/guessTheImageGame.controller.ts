@@ -27,7 +27,9 @@ export const getGuessTheImageGameById = async (
   res: Response
 ) => {
   try {
-    const guessTheImageGame = await GuessTheImageGame.findById(req.params.id);
+    const guessTheImageGame = await GuessTheImageGame.findById(
+      req.params.id
+    ).populate("game");
     if (!guessTheImageGame) {
       return res
         .status(404)
@@ -63,18 +65,15 @@ export const createGuessTheImageGame = async (
     const gameType = "GuessTheImageGame";
     const maxGames = settings.totalGames;
 
-    if (maxGames < 1 || maxGames > 25) {
-      return res
-        .status(400)
-        .json({ message: "El valor de totalGames debe estar entre 1 y 25" });
-    }
-
     const game = new Game({
       name: "Adivinar la Imagen",
+      description:
+        "Un juego interactivo donde debes adivinar la imagen correcta.",
       user: userId,
       gameType: gameType,
       currentGameCount: 0,
       totalGames: maxGames,
+      completed: false,
     });
 
     await game.save();
@@ -145,15 +144,13 @@ export const createGuessTheImageGame = async (
 
     game.currentGameCount += 1;
     await game.save();
-    return res
-      .status(201)
-      .json({
-        message: "Juego creado con éxito",
-        game,
-        guessTheImageGame,
-        currentGame: game.currentGameCount,
-        totalGames: maxGames,
-      });
+    return res.status(201).json({
+      message: "Juego creado con éxito",
+      game,
+      guessTheImageGame,
+      currentGame: game.currentGameCount,
+      totalGames: maxGames,
+    });
   } catch (error: any) {
     handleValidationErrors(error, res);
   }
@@ -182,24 +179,17 @@ export const completeCurrentGame = async (
 
     const guessTheImageGame = await GuessTheImageGame.findById(
       guessTheImageGameId
-    );
+    ).populate("game");
     if (!guessTheImageGame)
       return res
         .status(404)
         .json({ error: "Juego de Adivinar la Imagen no encontrado" });
 
-    if (forceComplete) {
-      guessTheImageGame.status = "completed";
-      await guessTheImageGame.save();
-      return res.status(200).json({ message: "Juego completado forzosamente" });
-    }
-
     guessTheImageGame.selectedAnswer = selectedAnswer;
 
     const isAnswerCorrect =
       guessTheImageGame.correctAnswer === guessTheImageGame.selectedAnswer;
-
-    if (!isAnswerCorrect && countAsCompleted) {
+    if (!isAnswerCorrect && forceComplete) {
       return handleIncompleteGame(req, res, guessTheImageGame);
     }
 
@@ -323,14 +313,31 @@ const handleIncompleteGame = async (
   res: Response,
   guessTheImageGame: InstanceType<typeof GuessTheImageGame>
 ) => {
+  const game = await Game.findById(guessTheImageGame.game);
+  if (!game) {
+    return res.status(404).json({ message: "Juego no encontrado" });
+  }
   if (req.body.forceComplete) {
     await completeGuessTheImageGame(guessTheImageGame);
-    return res.status(200).json({ message: "Juego completado forzosamente" });
-  } else {
-    return res.status(400).json({
-      error:
-        "La respuesta debe ser correcta o el usuario debe elegir terminar el juego antes de completarlo",
+    return res.status(200).json({
+      message: "Juego completado forzosamente",
+      nextGame: true,
+      reason: "forceComplete",
     });
+  } else {
+    if (game.currentGameCount >= game.totalGames) {
+      await completeGuessTheImageGame(guessTheImageGame);
+      return res.status(200).json({
+        message: "Juego completado forzosamente",
+        reason: "maxGamesReached",
+      });
+    } else {
+      return res.status(200).json({
+        message: "Juego incompleto",
+        nextGame: true,
+        guessTheImageGameId: guessTheImageGame._id,
+      });
+    }
   }
 };
 
