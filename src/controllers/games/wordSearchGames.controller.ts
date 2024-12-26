@@ -66,6 +66,7 @@ export const createWordSearchGame = async (
       currentGameCount: 0,
       totalGames: maxGames,
       completed: false,
+      deck: deckId,
     });
     await game.save();
     user.games.push(game._id);
@@ -180,7 +181,11 @@ export const completeCurrentGame = async (
     user.totalGamesCompletedByType.set(gameType, totalCount + 1);
     await user.save();
 
-    if (game.currentGameCount >= maxGames) {
+    game.currentGameCount += 1;
+
+    if (game.currentGameCount > maxGames) {
+      game.completed = true;
+      await game.save();
       return res.status(200).json({
         message: `¡Felicidades! Has completado las ${maxGames} partidas de ${gameType}.`,
         currentGame: game.currentGameCount,
@@ -188,7 +193,6 @@ export const completeCurrentGame = async (
       });
     }
 
-    game.currentGameCount += 1;
     await game.save();
 
     const deck = await Deck.findById(wordSearchGame.deck).populate("cards");

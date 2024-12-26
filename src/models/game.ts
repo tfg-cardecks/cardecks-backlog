@@ -39,6 +39,7 @@ const gameSchema = new Schema({
   },
   completed: { type: Boolean, default: false },
   user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  deck: { type: Schema.Types.ObjectId, ref: "Deck", required: true },
 });
 
 export const Game = mongoose.model("Game", gameSchema, "games");

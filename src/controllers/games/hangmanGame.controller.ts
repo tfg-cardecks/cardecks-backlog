@@ -27,9 +27,13 @@ export const getHangmanGames = async (_req: Request, res: Response) => {
 
 export const getHangmanGameById = async (req: CustomRequest, res: Response) => {
   try {
-    const hangmanGame = await HangmanGame.findById(req.params.id).populate("game");
+    const hangmanGame = await HangmanGame.findById(req.params.id).populate(
+      "game"
+    );
     if (!hangmanGame) {
-      return res.status(404).json({ message: "Juego del Ahorcado no encontrado" });
+      return res
+        .status(404)
+        .json({ message: "Juego del Ahorcado no encontrado" });
     }
     return res.status(200).json(hangmanGame);
   } catch (error: any) {
@@ -65,6 +69,7 @@ export const createHangmanGame = async (req: CustomRequest, res: Response) => {
       currentGameCount: 0,
       totalGames: maxGames,
       completed: false,
+      deck: deckId,
     });
 
     await game.save();
@@ -109,15 +114,13 @@ export const createHangmanGame = async (req: CustomRequest, res: Response) => {
 
     game.currentGameCount += 1;
     await game.save();
-    return res
-      .status(201)
-      .json({
-        message: "Juego creado con éxito",
-        game,
-        hangmanGame,
-        currentGame: game.currentGameCount,
-        totalGames: maxGames,
-      });
+    return res.status(201).json({
+      message: "Juego creado con éxito",
+      game,
+      hangmanGame,
+      currentGame: game.currentGameCount,
+      totalGames: maxGames,
+    });
   } catch (error: any) {
     handleValidationErrors(error, res);
   }
@@ -194,7 +197,9 @@ export const completeCurrentGame = async (
       wrongLetters,
     } = req.body;
     const userId = req.user?.id;
-    const hangmanGame = await HangmanGame.findById(hangmanGameId).populate("game");
+    const hangmanGame = await HangmanGame.findById(hangmanGameId).populate(
+      "game"
+    );
     if (!hangmanGame)
       return res.status(404).json({ error: "Juego de Ahorcado no encontrado" });
 
@@ -239,9 +244,10 @@ export const completeCurrentGame = async (
       user.totalGamesCompletedByType.set(gameType, totalCount + 1);
       await user.save();
 
-      if (game.currentGameCount >= maxGames) {
-        game.completed = true;
+      game.currentGameCount += 1;
 
+      if (game.currentGameCount > maxGames) {
+        game.completed = true;
         await game.save();
         await completeAllHangmanGames(game._id.toString());
         return res.status(200).json({
@@ -250,8 +256,6 @@ export const completeCurrentGame = async (
           totalGames: maxGames,
         });
       }
-
-      game.currentGameCount += 1;
       await game.save();
     }
 
@@ -293,7 +297,7 @@ export const completeCurrentGame = async (
       gameId: hangmanGame.game,
       hangmanGameId: newHangmanGame._id,
       currentGame: game.currentGameCount,
-      totalGames: game.totalGames
+      totalGames: game.totalGames,
     });
   } catch (error: any) {
     handleValidationErrors(error, res);
@@ -343,7 +347,10 @@ const completeHangmanGame = async (
 };
 
 const completeAllHangmanGames = async (gameId: string) => {
-  await HangmanGame.updateMany({ game: gameId, status: { $ne: "completed" } }, { status: "completed" });
+  await HangmanGame.updateMany(
+    { game: gameId, status: { $ne: "completed" } },
+    { status: "completed" }
+  );
 };
 
 export const deleteHangmanGame = async (req: CustomRequest, res: Response) => {

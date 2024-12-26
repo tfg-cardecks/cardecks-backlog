@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
 // local imports
 import { User } from "../models/user";
@@ -161,5 +162,92 @@ export const resetPassword = async (req: Request, res: Response) => {
       .json({ message: "Contraseña actualizada con éxito" });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
+  }
+};
+
+export const getGameStats = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const stats = await Game.aggregate([
+      { $match: { user: new mongoose.Types.ObjectId(id), completed: true } },
+      {
+        $group: {
+          _id: "$gameType",
+          totalCompleted: { $sum: "$totalGames" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          gameType: "$_id",
+          totalCompleted: 1,
+        },
+      },
+    ]);
+
+    return res.status(200).json(stats);
+  } catch (error: any) {
+    return res
+      .status(500)
+      .json({ message: "Error al obtener las estadísticas", error });
+  }
+};
+
+export const getMostUsedDecks = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const stats = await Game.aggregate([
+      { $match: { user: new mongoose.Types.ObjectId(id) } },
+      {
+        $group: {
+          _id: { gameType: "$gameType", deck: "$deck" },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { count: -1 },
+      },
+      {
+        $group: {
+          _id: "$_id.gameType",
+          decks: {
+            $push: {
+              deck: "$_id.deck",
+              count: "$count",
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          gameType: "$_id",
+          decks: { $slice: ["$decks", 3] },
+        },
+      },
+      { $unwind: "$decks" },
+      {
+        $lookup: {
+          from: "decks",
+          localField: "decks.deck",
+          foreignField: "_id",
+          as: "deckDetails",
+        },
+      },
+      { $unwind: "$deckDetails" },
+      {
+        $project: {
+          _id: 0,
+          gameType: 1,
+          deckName: "$deckDetails.name",
+          count: "$decks.count",
+        },
+      },
+    ]);
+    return res.status(200).json(stats);
+  } catch (error: any) {
+    return res
+      .status(500)
+      .json({ message: "Error al obtener las estadísticas", error });
   }
 };

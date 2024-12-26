@@ -74,6 +74,7 @@ export const createGuessTheImageGame = async (
       currentGameCount: 0,
       totalGames: maxGames,
       completed: false,
+      deck: deckId,
     });
 
     await game.save();
@@ -220,7 +221,11 @@ export const completeCurrentGame = async (
       user.totalGamesCompletedByType.set(gameType, totalCount + 1);
       await user.save();
 
-      if (game.currentGameCount >= maxGames) {
+      game.currentGameCount += 1;
+
+      if (game.currentGameCount > maxGames) {
+        game.completed = true;
+        await game.save();
         return res.status(200).json({
           message: `¡Felicidades! Has completado las ${maxGames} partidas de ${gameType}.`,
           currentGame: game.currentGameCount,
@@ -228,14 +233,12 @@ export const completeCurrentGame = async (
         });
       }
 
-      game.currentGameCount += 1;
       await game.save();
 
       const deck = await Deck.findById(guessTheImageGame.deck).populate(
         "cards"
       );
       if (!deck) return res.status(404).json({ error: "Mazo no encontrado" });
-
       const textImgCards = deck.cards.filter(
         (card: any) => card.cardType === "txtImg"
       );
