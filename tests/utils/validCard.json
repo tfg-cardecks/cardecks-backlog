@@ -1,0 +1,19 @@
+{
+  "title": "Card Title 3",
+  "theme": "Card Theme 3",
+  "cardType": "txtTxt",
+  "frontSide": {
+    "text": [
+      {
+        "content": "Texto de ejemplo"
+      }
+    ]
+  },
+  "backSide": {
+    "text": [
+      {
+        "content": "Texto de ejemplo en la parte trasera"
+      }
+    ]
+  }
+}
