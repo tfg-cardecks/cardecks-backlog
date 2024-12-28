@@ -1,7 +1,7 @@
 export function generateWordSearchGrid(
   words: string[],
-  gridSize: number = 10,
-  numWords: number = 4
+  gridSize: 10,
+  numWords: 4
 ): { grid?: string[][]; words?: string[]; error?: string } {
   if (gridSize < 1) {
     return { error: "El tamaño de la cuadrícula debe ser al menos 1." };
