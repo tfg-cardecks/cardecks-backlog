@@ -6,6 +6,7 @@ import app from "../src/app";
 import { API_BASE_URL, AUTH_BASE_URL } from "./utils/constants";
 import { user } from "./utils/newUser";
 import { badCards, card, card2 } from "./utils/newCard";
+import { Card } from "../src/models/card";
 
 before;
 after;
@@ -38,6 +39,43 @@ beforeAll(async () => {
     .send(card2);
 
   id2 = response3.body._id;
+});
+
+describe("Testing autocomplete card themes method", () => {
+  it("should return themes matching the query", async () => {
+    const response = await request(app)
+      .get(`${API_BASE_URL}/cardAutocomplete`)
+      .query({ query: "Theme" })
+      .set("Authorization", token);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toContain("Card Theme");
+    expect(response.body).toContain("Card Theme 2");
+  });
+
+  it("should return 400 for invalid query", async () => {
+    const response = await request(app)
+      .get(`${API_BASE_URL}/cardAutocomplete`)
+      .query({ query: "" })
+      .set("Authorization", token);
+
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty("message", "Consulta no válida");
+  });
+
+  it("should return 500 for server error", async () => {
+    jest.spyOn(Card, "distinct").mockImplementationOnce(() => {
+      throw new Error("Server error");
+    });
+
+    const response = await request(app)
+      .get(`${API_BASE_URL}/cardAutocomplete`)
+      .query({ query: "Theme" })
+      .set("Authorization", token);
+
+    expect(response.status).toBe(500);
+    expect(response.body).toHaveProperty("message", "Server error");
+  });
 });
 
 describe("Testing get cards method", () => {

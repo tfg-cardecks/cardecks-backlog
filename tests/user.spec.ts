@@ -5,6 +5,8 @@ import { API_BASE_URL, AUTH_BASE_URL } from "./utils/constants";
 import { user, user2 } from "./utils/newUser";
 import { before, after } from "./utils/hooks";
 import { User } from "../src/models/user";
+import { Game } from "../src/models/game";
+import { Deck } from "../src/models/deck";
 
 before;
 after;
@@ -65,6 +67,78 @@ describe("User Routes", () => {
       .set("Authorization", token);
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("username", user.username);
+  });
+
+  it("should get game stats for a user", async () => {
+    await Game.create([
+      {
+        user: userId,
+        gameType: "GuessTheImageGame",
+        completed: true,
+        totalGames: 5,
+        name: "Game 1",
+        deck: new mongoose.Types.ObjectId(),
+      },
+      {
+        user: userId,
+        gameType: "GuessTheImageGame",
+        completed: true,
+        totalGames: 3,
+        name: "Game 2",
+        deck: new mongoose.Types.ObjectId(),
+      },
+    ]);
+
+    const response = await request(app)
+      .get(`${API_BASE_URL}/user/${userId}/game-stats`)
+      .set("Authorization", token);
+
+    expect(response.status).toBe(200);
+    expect(response.body).not.toHaveLength(0);
+  });
+
+  it("should get most used decks for a user", async () => {
+    const deck1 = await Deck.create({
+      name: "Deck 1",
+      theme: "Theme 1",
+      description: "Description 1",
+    });
+    const deck2 = await Deck.create({
+      name: "Deck 2",
+      theme: "Theme 2",
+      description: "Description 2",
+    });
+
+    await Game.create([
+      {
+        user: userId,
+        gameType: "GuessTheImageGame",
+        deck: deck1._id,
+        name: "Game 1",
+        totalGames: 1,
+      },
+      {
+        user: userId,
+        gameType: "GuessTheImageGame",
+        deck: deck1._id,
+        name: "Game 2",
+        totalGames: 1,
+      },
+      {
+        user: userId,
+        gameType: "GuessTheImageGame",
+        deck: deck2._id,
+        name: "Game 3",
+        totalGames: 1,
+      },
+    ]);
+
+    const response = await request(app)
+      .get(`${API_BASE_URL}/user/${userId}/most-used-decks`)
+      .set("Authorization", token);
+
+    expect(response.status).toBe(200);
+    expect(response.body).not.toHaveLength(0);
   });
 
   it("should edit an user by ID", async () => {

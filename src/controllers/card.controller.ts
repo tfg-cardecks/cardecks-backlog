@@ -278,3 +278,20 @@ export const importCard = async (req: CustomRequest, res: Response) => {
     }
   }
 };
+
+export const autocompleteCardThemes = async (req: Request, res: Response) => {
+  try {
+    const { query } = req.query;
+    if (!query || typeof query !== "string") {
+      return res.status(400).json({ message: "Consulta no válida" });
+    }
+
+    const themes = await Card.distinct("theme", {
+      theme: { $regex: query, $options: "i" },
+    });
+
+    return res.status(200).json(themes);
+  } catch (error: any) {
+    return res.status(500).json({ message: error.message });
+  }
+};

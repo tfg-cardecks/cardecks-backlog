@@ -24,7 +24,7 @@ async function createRoles() {
 
 async function createModels() {
   try {
-    createRoles();
+    void createRoles();
     console.log(green("Creando modelos..."));
     await User.createCollection();
     await Deck.createCollection();

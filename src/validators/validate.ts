@@ -65,19 +65,26 @@ export const validateCardData = (cardData: any) => {
   const { cardType, frontSide, backSide } = cardData;
 
   if (cardType === "txtImg") {
-
-    if (!frontSide || !frontSide.text || frontSide.text.length !== 1) {
-      throw new Error("Para el tipo 'Texto e Imagen', el frente debe tener un texto.");
+    if (!frontSide?.text || frontSide.text.length !== 1) {
+      throw new Error(
+        "Para el tipo 'Texto e Imagen', el frente debe tener un texto."
+      );
     }
-    if (!backSide || !backSide.images || backSide.images.length !== 1) {
-      throw new Error("Para el tipo 'Texto e Imagen', el reverso debe tener una imagen.");
+    if (!backSide?.images || backSide.images.length !== 1) {
+      throw new Error(
+        "Para el tipo 'Texto e Imagen', el reverso debe tener una imagen."
+      );
     }
   } else if (cardType === "txtTxt") {
-    if (!frontSide || !frontSide.text || frontSide.text.length !== 1) {
-      throw new Error("Para el tipo 'Texto y Texto', el frente debe tener un texto.");
+    if (!frontSide?.text || frontSide.text.length !== 1) {
+      throw new Error(
+        "Para el tipo 'Texto y Texto', el frente debe tener un texto."
+      );
     }
-    if (!backSide || !backSide.text || backSide.text.length !== 1) {
-      throw new Error("Para el tipo 'Texto y Texto', el reverso debe tener un texto.");
+    if (!backSide?.text || backSide.text.length !== 1) {
+      throw new Error(
+        "Para el tipo 'Texto y Texto', el reverso debe tener un texto."
+      );
     }
   } else {
     throw new Error("Tipo de carta inválido.");
@@ -92,10 +99,10 @@ export const handleSpecificValidationErrors = (error: any, res: Response) => {
 };
 
 export const handleValidationErrorsDeckUpdate = (error: any, res: Response) => {
-  if (error.name === 'ValidationError') {
+  if (error.name === "ValidationError") {
     const errors = Object.values(error.errors).map((err: any) => err.message);
     return res.status(400).json({ message: errors });
-  } else if (error.name === 'CastError') {
+  } else if (error.name === "CastError") {
     return res.status(400).json({ message: `ID no válido: ${error.value}` });
   } else {
     return res.status(500).json({ message: error.message });

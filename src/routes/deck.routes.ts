@@ -11,6 +11,7 @@ import {
   exportDeck,
   importDeck,
   importCardInDeck,
+  autocompleteDecks,
 } from "../controllers/deck.controller";
 import { checkUserRol } from "../middlewares/checkUserRole";
 import { upload } from "../utils/uploadImage";
@@ -31,7 +32,8 @@ router.post(
   upload.single("file"),
   importCardInDeck
 );
-router.post('/deck/import', checkUserRol, upload.single('file'), importDeck);
+router.post("/deck/import", checkUserRol, upload.single("file"), importDeck);
 
+router.get("/deckAutocomplete", checkUserRol, autocompleteDecks);
 
 export default router;
