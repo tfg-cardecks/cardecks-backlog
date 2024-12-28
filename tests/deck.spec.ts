@@ -143,7 +143,7 @@ describe("Testing get decks method", () => {
       .set("Authorization", token);
     expect(response2.status).toBe(200);
   });
-  
+
   it("Can't get an specific deck (deck not found)", async () => {
     const response2 = await request(app)
       .get(`${API_BASE_URL}/deck/66fbe37b9d600a318c38ab12`)
