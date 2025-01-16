@@ -34,8 +34,8 @@ const gameSchema = new Schema({
   totalGames: {
     type: Number,
     required: [true, "El total de partidas es obligatorio"],
-    min: [1, "El total de partidas debe ser mayor a 1"],
-    max: [25, "El total de partidas debe ser menor a 25"],
+    min: [1, "El total de partidas debe ser mínimo 1"],
+    max: [25, "El total de partidas debe ser máximo 25"],
   },
   completed: { type: Boolean, default: false },
   user: { type: Schema.Types.ObjectId, ref: "User", required: true },
