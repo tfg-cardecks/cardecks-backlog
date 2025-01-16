@@ -7,9 +7,10 @@ import { User } from "../../models/user";
 import { Deck } from "../../models/deck";
 import { handleValidationErrors } from "../../validators/validate";
 import { CustomRequest } from "../../interfaces/customRequest";
+import { Card } from "../../models/card";
 
 function cleanWord(word: string): string {
-  const withoutSpecialChars = word.replace(/[^A-Z\s]/gi, "");
+  const withoutSpecialChars = word.replace(/[^A-Z0-9\s]/gi, "");
   return withoutSpecialChars.toUpperCase();
 }
 
@@ -91,8 +92,8 @@ export const createMatchingGame = async (req: CustomRequest, res: Response) => {
     const frontTexts = new Set<string>();
     const backTexts = new Set<string>();
 
-    for (const card of textTextCards) {
-
+    for (const cardId of textTextCards) {
+      const card = (await Card.findById(cardId)) as any;
       for (const textObj of card.frontSide.text) {
         const word = cleanWord(textObj.content);
         if (frontTexts.has(word)) {
@@ -104,7 +105,6 @@ export const createMatchingGame = async (req: CustomRequest, res: Response) => {
         frontTexts.add(word);
       }
       for (const textObj of card.backSide.text) {
-
         const meaning = cleanWord(textObj.content);
         if (backTexts.has(meaning)) {
           return res.status(400).json({
