@@ -84,7 +84,7 @@ export const validCard2DeckForGuessTheImageGame = {
   backSide: {
     images: [
       {
-        url: "https://static.fundacion-affinity.org/cdn/farfuture/PVbbIC-0M9y4fPbbCsdvAD8bcjjtbFc0NSP3lRwlWcE/mtime:1643275542/sites/default/files/los-10-sonidos-principales-del-perro.jpg",
+        url: "https://es.mypet.com/wp-content/uploads/sites/23/2021/03/GettyImages-1143107320-e1597136744606.jpg",
       },
     ],
   },

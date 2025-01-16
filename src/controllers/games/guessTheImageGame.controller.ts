@@ -63,7 +63,7 @@ export const createGuessTheImageGame = async (
       user.gamesCompletedByType = new Map<string, number>();
 
     const gameType = "GuessTheImageGame";
-    const maxGames = settings.totalGames;
+    const maxGames = settings?.totalGames || 1;
 
     const game = new Game({
       name: "Adivinar la Imagen",
@@ -138,7 +138,7 @@ export const createGuessTheImageGame = async (
       correctAnswer: correctAnswer,
       selectedAnswer: "",
       status: "inProgress",
-      duration: settings.duration,
+      duration: settings?.duration || 60,
     });
 
     await guessTheImageGame.save();

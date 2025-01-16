@@ -67,6 +67,7 @@ beforeAll(async () => {
     .post(`${API_BASE_URL}/cards`)
     .set("Authorization", token)
     .send(validCard5DeckForGuessTheImageGame);
+
   cardId5 = responseCard5.body._id;
 
   const responseDeck = await request(app)

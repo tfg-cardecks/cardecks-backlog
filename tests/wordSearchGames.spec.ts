@@ -184,7 +184,7 @@ describe("WordSearchGame API", () => {
 
     expect(response.status).toBe(400);
     expect(response.body.message).toBe(
-      "El total de partidas debe ser menor a 25"
+      "El total de partidas debe ser máximo 25"
     );
   });
 
