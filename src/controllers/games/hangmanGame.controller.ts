@@ -60,7 +60,7 @@ export const createHangmanGame = async (req: CustomRequest, res: Response) => {
       user.gamesCompletedByType = new Map<string, number>();
 
     const gameType = "HangmanGame";
-    const maxGames = settings?.totalGames || 1; 
+    const maxGames = settings?.totalGames || 1;
 
     let game = new Game({
       name: "Juego de Ahorcado",
@@ -107,7 +107,6 @@ export const createHangmanGame = async (req: CustomRequest, res: Response) => {
       foundLetters: [],
       wrongLetters: [],
       duration: settings?.duration || 60,
-      score: 0,
     });
 
     await hangmanGame.save();
@@ -290,7 +289,6 @@ export const completeCurrentGame = async (
       foundLetters: [],
       wrongLetters: [],
       duration: hangmanGame.duration,
-      score: 0,
     });
     await newHangmanGame.save();
     return res.status(201).json({

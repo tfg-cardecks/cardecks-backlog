@@ -45,11 +45,7 @@ const wordSearchGameSchema = new Schema({
     required: [true, "El número máximo de palabras es obligatorio"],
     min: [2, "EL total de palabras debe estar entre 2 y 4"],
     max: [4, "EL total de palabras debe estar entre 2 y 4"],
-  },
-  score: {
-    type: Number,
-    default: 0,
-  },
+  }
 });
 
 export const WordSearchGame = mongoose.model(

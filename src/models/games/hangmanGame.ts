@@ -55,11 +55,7 @@ const hangmanGameSchema = new Schema({
     required: [true, "La duración es obligatoria"],
     min: [5, "La duración mínima es 5 segundos"],
     max: [300, "La duración máxima es 300 segundos"],
-  },
-  score: {
-    type: Number,
-    default: 0,
-  },
+  }
 });
 
 export const HangmanGame = mongoose.model("HangmanGame", hangmanGameSchema);
