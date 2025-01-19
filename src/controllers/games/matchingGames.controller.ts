@@ -168,7 +168,6 @@ export const createMatchingGame = async (req: CustomRequest, res: Response) => {
       duration: settings?.duration || 60,
       maxWords: settings?.maxWords || 2,
       status: "inProgress",
-      attempts: options.length,
     });
 
     await matchingGame.save();
@@ -229,6 +228,7 @@ export const completeCurrentGame = async (
     ).every(([key, value]) => matchingGame.selectedAnswer.get(key) === value);
 
     if (!isAnswerCorrect && forceComplete) {
+      await matchingGame.save();
       return handleIncompleteGame(req, res, matchingGame);
     }
     if (isAnswerCorrect || countAsCompleted) {
@@ -286,15 +286,46 @@ export const completeCurrentGame = async (
         });
       }
 
-      const words = textTextCards
-        .flatMap((card: any) =>
-          card.frontSide.text.map((textObj: any) => cleanWord(textObj.content))
-        )
-        .filter((text: string) => text.length <= 9);
+      const frontTexts = new Set<string>();
+      const backTexts = new Set<string>();
 
-      const meanings = textTextCards.flatMap((card: any) =>
-        card.backSide.text.map((textObj: any) => cleanWord(textObj.content))
-      );
+      for (const cardId of textTextCards) {
+        const card = (await Card.findById(cardId)) as any;
+        for (const textObj of card.frontSide.text) {
+          const word = cleanWord(textObj.content);
+          if (frontTexts.has(word)) {
+            return res.status(400).json({
+              message:
+                "No puedes usar cartas con el mismo texto en la parte delantera",
+            });
+          }
+          frontTexts.add(word);
+        }
+        for (const textObj of card.backSide.text) {
+          const meaning = cleanWord(textObj.content);
+          if (backTexts.has(meaning)) {
+            return res.status(400).json({
+              message:
+                "No puedes usar cartas con el mismo texto en la parte trasera",
+            });
+          }
+          backTexts.add(meaning);
+        }
+      }
+
+      const wordMeaningMap = new Map<string, string>();
+      textTextCards.forEach((card: any) => {
+        card.frontSide.text.forEach((textObj: any, index: number) => {
+          const word = cleanWord(textObj.content);
+          const meaning = cleanWord(card.backSide.text[index].content);
+          if (word.length <= 9) {
+            wordMeaningMap.set(word, meaning);
+          }
+        });
+      });
+
+      const words = Array.from(wordMeaningMap.keys());
+      const meanings = Array.from(wordMeaningMap.values());
 
       if (words.length < 10 || meanings.length < 10)
         return res.status(400).json({
@@ -303,24 +334,39 @@ export const completeCurrentGame = async (
         });
 
       const selectedWords = getRandomWords(words, matchingGame.maxWords);
-      const selectedMeanings = getRandomWords(
-        meanings,
-        matchingGame.maxWords * 2
+      const selectedMeanings = selectedWords.map((word) =>
+        wordMeaningMap.get(word)
       );
+
+      const remainingMeanings = meanings.filter(
+        (meaning) => !selectedMeanings.includes(meaning)
+      );
+
+      const additionalMeanings = getRandomWords(
+        remainingMeanings,
+        selectedWords.length * 2 - selectedMeanings.length
+      );
+
+      const options = shuffleArray([
+        ...selectedMeanings,
+        ...additionalMeanings,
+      ]);
+
+      const correctAnswer = new Map();
+      selectedWords.forEach((word, index) => {
+        correctAnswer.set(word, selectedMeanings[index]);
+      });
 
       const newMatchingGame = new MatchingGame({
         game: game._id,
         user: userId,
         deck: deck._id,
         words: selectedWords,
-        options: selectedMeanings,
-        correctAnswer: new Map(
-          selectedWords.map((word, index) => [word, selectedMeanings[index]])
-        ),
+        options: options,
+        correctAnswer: correctAnswer,
         duration: matchingGame.duration,
         maxWords: matchingGame.maxWords,
         status: "inProgress",
-        attempts: selectedMeanings.length,
       });
 
       await newMatchingGame.save();
@@ -329,6 +375,11 @@ export const completeCurrentGame = async (
         matchingGameId: newMatchingGame._id,
         currentGame: game.currentGameCount,
         totalGames: maxGames,
+      });
+    } else {
+      await matchingGame.save();
+      return res.status(200).json({
+        message: "Respuesta incorrecta, intenta de nuevo.",
       });
     }
   } catch (error: any) {
@@ -349,6 +400,7 @@ const handleIncompleteGame = async (
     await completeGamematchingGame(matchingGame);
     return res.status(200).json({
       message: "Juego completado forzosamente",
+      nextGame: true,
       reason: "forceComplete",
     });
   } else {
