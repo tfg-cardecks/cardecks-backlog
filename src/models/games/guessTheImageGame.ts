@@ -48,5 +48,6 @@ const guessTheImageGameSchema = new Schema({
 
 export const GuessTheImageGame = mongoose.model(
   "GuessTheImageGame",
-  guessTheImageGameSchema
+  guessTheImageGameSchema,
+  "guessTheImageGames"
 );

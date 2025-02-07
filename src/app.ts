@@ -14,6 +14,7 @@ import userRoutes from "./routes/user.routes";
 import hangmanGameRoutes from "./routes/games/hangmanGame.routes";
 import guessTheImageGameRoutes from "./routes/games/guessTheImageGame.routes";
 import matchingGameRoutes from "./routes/games/matchingGame.routes";
+import letterOrderGame from "./routes/games/letterOrderGame.routes";
 
 const app: Express = express();
 
@@ -30,6 +31,7 @@ app.use("/api", userRoutes);
 app.use("/api", hangmanGameRoutes);
 app.use("/api", guessTheImageGameRoutes);
 app.use("/api", matchingGameRoutes);
+app.use("/api", letterOrderGame);
 
 app.get("/", (_req: Request, res: Response) => {
   res.redirect("/api-docs/");
@@ -47,6 +49,7 @@ expressOasGenerator.handleResponses(app, {
     "HangmanGame",
     "GuessTheImageGame",
     "MatchingGame",
+    "LetterOrderGame",
   ],
   swaggerDocumentOptions: { info: { title: "Cardecks API", version: "1.0.0" } },
   specOutputFileBehavior: "PRESERVE",

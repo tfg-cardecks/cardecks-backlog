@@ -58,4 +58,4 @@ const hangmanGameSchema = new Schema({
   }
 });
 
-export const HangmanGame = mongoose.model("HangmanGame", hangmanGameSchema);
+export const HangmanGame = mongoose.model("HangmanGame", hangmanGameSchema, "hangmanGames");
