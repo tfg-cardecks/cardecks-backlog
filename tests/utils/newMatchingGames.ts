@@ -1,7 +1,7 @@
 // Datos válidos para un juego de MatchingGame
 export const validMatchingGame = {
   settings: {
-    totalGames: 5,
+    totalGames: 1,
     duration: 60,
     maxWords: 4,
   },

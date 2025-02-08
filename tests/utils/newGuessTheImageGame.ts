@@ -1,7 +1,7 @@
 // Datos válidos para un juego de adivinar la imagen
 export const validGuessTheImageGame = {
   settings: {
-    totalGames: 5,
+    totalGames: 1,
     duration: 60,
   },
 };

@@ -132,10 +132,11 @@ describe("GuessTheImageGame API", () => {
       .set("Authorization", token)
       .send({ selectedAnswer: correctAnswer });
 
-    expect(response.status).toBe(201);
-    expect(response.body).toHaveProperty("gameId");
-    expect(response.body).toHaveProperty("guessTheImageGameId");
-  }, 3000);
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty("currentGame", 2);
+    expect(response.body).toHaveProperty("message", "¡Felicidades! Has completado las 1 partidas de GuessTheImageGame.");
+    expect(response.body).toHaveProperty("totalGames", 1);
+    }, 3000);
 
   it("should force complete a guess the image game", async () => {
     const response = await request(app)

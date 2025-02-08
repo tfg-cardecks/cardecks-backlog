@@ -1,7 +1,7 @@
 // Datos válidos para un juego de Hangman
 export const validHangmanGame = {
   settings: {
-    totalGames: 5,
+    totalGames: 1,
     duration: 60,
   },
 };

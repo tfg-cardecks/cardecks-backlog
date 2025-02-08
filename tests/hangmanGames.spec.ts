@@ -156,9 +156,10 @@ describe("HangmanGame API", () => {
         countAsCompleted: true,
       });
 
-    expect(response.status).toBe(201);
-    expect(response.body).toHaveProperty("gameId");
-    expect(response.body).toHaveProperty("hangmanGameId");
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty("currentGame", 2);
+    expect(response.body).toHaveProperty("message", "¡Felicidades! Has completado las 1 partidas de HangmanGame.");
+    expect(response.body).toHaveProperty("totalGames", 1);
   }, 3000);
 
   it("should force complete a hangman game", async () => {
@@ -187,9 +188,10 @@ describe("HangmanGame API", () => {
         countAsCompleted: true,
       });
 
-    expect(response.status).toBe(201);
-    expect(response.body).toHaveProperty("gameId");
-    expect(response.body).toHaveProperty("hangmanGameId");
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty("currentGame", 3);
+    expect(response.body).toHaveProperty("message", "¡Felicidades! Has completado las 1 partidas de HangmanGame.");
+    expect(response.body).toHaveProperty("totalGames", 1);
   });
 
 
