@@ -7,6 +7,7 @@ import { API_BASE_URL, AUTH_BASE_URL } from "./utils/constants";
 import { user } from "./utils/newUser";
 import {
   validGuessTheImageGame,
+  validGuessTheImageGame2,
   validDeckForGuessTheImageGame,
   validCardDeckForGuessTheImageGame,
   validCard2DeckForGuessTheImageGame,
@@ -21,7 +22,9 @@ after;
 let token: string;
 let deckId: string;
 let gameId: string;
+let gameId2: string;
 let guessTheImageGameId: string;
+let guessTheImageGameId2: string;
 let userId: string;
 let cardId1: string;
 let cardId2: string;
@@ -85,8 +88,16 @@ beforeAll(async () => {
     .set("Authorization", token)
     .send({ ...validGuessTheImageGame, deckId });
 
+  const response3 = await request(app)
+    .post(`${API_BASE_URL}/guessTheImageGames`)
+    .set("Authorization", token)
+    .send({ ...validGuessTheImageGame2, deckId });
+
   guessTheImageGameId = response2.body.guessTheImageGame._id;
   gameId = response2.body.game._id;
+
+  guessTheImageGameId2 = response3.body.guessTheImageGame._id;
+  gameId2 = response3.body.game._id;
 });
 
 describe("GuessTheImageGame API", () => {
@@ -120,7 +131,7 @@ describe("GuessTheImageGame API", () => {
     expect(response.status).toBe(500);
   });
 
-  it("should complete a guess the image game with the correct answer", async () => {
+  it("should complete a guess the image match with the correct answer and finish the game", async () => {
     const gameResponse = await request(app)
       .get(`${API_BASE_URL}/guessTheImageGame/${guessTheImageGameId}`)
       .set("Authorization", token);
@@ -134,9 +145,33 @@ describe("GuessTheImageGame API", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("currentGame", 2);
-    expect(response.body).toHaveProperty("message", "¡Felicidades! Has completado las 1 partidas de GuessTheImageGame.");
+    expect(response.body).toHaveProperty(
+      "message",
+      "¡Felicidades! Has completado las 1 partidas de GuessTheImageGame."
+    );
     expect(response.body).toHaveProperty("totalGames", 1);
-    }, 3000);
+  }, 3000);
+
+  it("should complete a guess the image match with the correct answer and pass to the next match", async () => {
+    const gameResponse = await request(app)
+      .get(`${API_BASE_URL}/guessTheImageGame/${guessTheImageGameId2}`)
+      .set("Authorization", token);
+
+    const correctAnswer = gameResponse.body.correctAnswer;
+
+    const response = await request(app)
+      .post(`${API_BASE_URL}/currentGuessTheImageGame/${guessTheImageGameId2}`)
+      .set("Authorization", token)
+      .send({ selectedAnswer: correctAnswer });
+
+    expect(response.status).toBe(201);
+    expect(response.body).toHaveProperty("currentGame", 2);
+    expect(response.body).toHaveProperty("totalGames", 2);
+    expect(response.body).toHaveProperty("gameId");
+    expect(response.body.gameId).toHaveProperty("completed", false);
+    expect(response.body.gameId).toHaveProperty("currentGameCount", 1);
+    expect(response.body).toHaveProperty("guessTheImageGameId");
+  }, 3000);
 
   it("should force complete a guess the image game", async () => {
     const response = await request(app)

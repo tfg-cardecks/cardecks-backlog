@@ -7,6 +7,15 @@ export const validMatchingGame = {
   },
 };
 
+// Datos válidos para un juego de MatchingGame
+export const validMatchingGame2 = {
+  settings: {
+    totalGames: 2,
+    duration: 60,
+    maxWords: 4,
+  },
+};
+
 // Datos inválidos para un juego de MatchingGame
 export const invalidMatchingGames = [
   // Faltan campos obligatorios

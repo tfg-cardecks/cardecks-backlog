@@ -6,6 +6,15 @@ export const validHangmanGame = {
   },
 };
 
+// Datos válidos para un juego de Hangman
+export const validHangmanGame2 = {
+  settings: {
+    totalGames: 2,
+    duration: 60,
+  },
+};
+
+
 // Datos inválidos para un juego de Hangman
 export const invalidHangmanGames = [
   // Faltan campos obligatorios

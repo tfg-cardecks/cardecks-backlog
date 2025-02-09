@@ -7,6 +7,7 @@ import { API_BASE_URL, AUTH_BASE_URL } from "./utils/constants";
 import { user } from "./utils/newUser";
 import {
   validLetterOrderGame,
+  validLetterOrderGame2,
   invalidLetterOrderGames,
   validDeckForLetterOrderGame,
   validCardDeckForLetterOrderGame,
@@ -27,6 +28,8 @@ let token: string;
 let deckId: string;
 let gameId: string;
 let letterOrderGameId: string;
+let gameId2: string;
+let letterOrderGameId2: string;
 let userId: string;
 let cardId1: string;
 let cardId2: string;
@@ -129,6 +132,14 @@ beforeAll(async () => {
 
   letterOrderGameId = response2.body.letterOrderGame._id;
   gameId = response2.body.game._id;
+
+  const response3 = await request(app)
+    .post(`${API_BASE_URL}/letterOrderGames`)
+    .set("Authorization", token)
+    .send({ ...validLetterOrderGame2, deckId });
+
+  letterOrderGameId2 = response3.body.letterOrderGame._id;
+  gameId2 = response3.body.game._id;
 });
 
 describe("LetterOrderGame API", () => {
@@ -189,7 +200,7 @@ describe("LetterOrderGame API", () => {
     }
   });
 
-  it("should complete a letter order game", async () => {
+  it("should complete a letter order game and finish the game", async () => {
     const response = await request(app)
       .post(`${API_BASE_URL}/currentLetterOrderGame/${letterOrderGameId}`)
       .set("Authorization", token)
@@ -197,6 +208,21 @@ describe("LetterOrderGame API", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("message");
+  });
+
+  it("should complete a letter order game and pass to the next match", async () => {
+    const response = await request(app)
+      .post(`${API_BASE_URL}/currentLetterOrderGame/${letterOrderGameId2}`)
+      .set("Authorization", token)
+      .send({ countAsCompleted: true, forceComplete: false });
+
+    expect(response.status).toBe(201);
+    expect(response.body).toHaveProperty("currentGame", 2);
+    expect(response.body).toHaveProperty("totalGames", 2);
+    expect(response.body).toHaveProperty("gameId");
+    expect(response.body.gameId).toHaveProperty("completed", false);
+    expect(response.body.gameId).toHaveProperty("currentGameCount", 1);
+    expect(response.body).toHaveProperty("letterOrderGameId");
   });
 
   it("should delete a letter order game by ID", async () => {

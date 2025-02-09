@@ -13,6 +13,7 @@ import {
   validCard5DeckForHangmanGame,
   validDeckForHangmanGame,
   validHangmanGame,
+  validHangmanGame2,
   invalidHangmanGames,
 } from "./utils/newHangmanGame";
 
@@ -23,6 +24,8 @@ let token: string;
 let deckId: string;
 let gameId: string;
 let hangmanGameId: string;
+let gameId2: string;
+let hangmanGameId2: string;
 let userId: string;
 let cardId1: string;
 let cardId2: string;
@@ -85,8 +88,16 @@ beforeAll(async () => {
     .set("Authorization", token)
     .send({ ...validHangmanGame, deckId });
 
+  const response3 = await request(app)
+    .post(`${API_BASE_URL}/hangmanGames`)
+    .set("Authorization", token)
+    .send({ ...validHangmanGame2, deckId });
+
   hangmanGameId = response2.body.hangmanGame._id;
   gameId = response2.body.game._id;
+
+  hangmanGameId2 = response3.body.hangmanGame._id;
+  gameId2 = response3.body.game._id;
 });
 
 describe("HangmanGame API", () => {
@@ -158,7 +169,10 @@ describe("HangmanGame API", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("currentGame", 2);
-    expect(response.body).toHaveProperty("message", "¡Felicidades! Has completado las 1 partidas de HangmanGame.");
+    expect(response.body).toHaveProperty(
+      "message",
+      "¡Felicidades! Has completado las 1 partidas de HangmanGame."
+    );
     expect(response.body).toHaveProperty("totalGames", 1);
   }, 3000);
 
@@ -176,7 +190,7 @@ describe("HangmanGame API", () => {
     expect(response.body.message).toBe("Juego completado forzosamente");
   });
 
-  it("should complete a hangman game with no letters found", async () => {
+  it("should complete a hangman game with no letters found and finish the game", async () => {
     const guessedLetters: string[] = [];
 
     const response = await request(app)
@@ -190,10 +204,33 @@ describe("HangmanGame API", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("currentGame", 3);
-    expect(response.body).toHaveProperty("message", "¡Felicidades! Has completado las 1 partidas de HangmanGame.");
+    expect(response.body).toHaveProperty(
+      "message",
+      "¡Felicidades! Has completado las 1 partidas de HangmanGame."
+    );
     expect(response.body).toHaveProperty("totalGames", 1);
   });
 
+  it("should complete a hangman game with no letters found and pass to the next match", async () => {
+    const guessedLetters: string[] = [];
+
+    const response = await request(app)
+      .post(`${API_BASE_URL}/currentHangmanGame/${hangmanGameId2}`)
+      .set("Authorization", token)
+      .send({
+        guessedLetters,
+        wrongLetters: [],
+        countAsCompleted: true,
+      });
+
+    expect(response.status).toBe(201);
+    expect(response.body).toHaveProperty("currentGame", 2);
+    expect(response.body).toHaveProperty("totalGames", 2);
+    expect(response.body).toHaveProperty("gameId");
+    expect(response.body.gameId).toHaveProperty("completed", false);
+    expect(response.body.gameId).toHaveProperty("currentGameCount", 1);
+    expect(response.body).toHaveProperty("hangmanGameId");
+  });
 
   it("should delete a hangman game by ID", async () => {
     const response = await request(app)

@@ -7,6 +7,15 @@ export const validLetterOrderGame = {
   },
 };
 
+// Datos válidos para un juego de adivinar la imagen
+export const validLetterOrderGame2 = {
+  settings: {
+    totalGames: 2,
+    duration: 60,
+    numWords: 3,
+  },
+};
+
 // Datos inválidos para un juego de Ordenar Letras
 export const invalidLetterOrderGames = [
   // Faltan campos obligatorios

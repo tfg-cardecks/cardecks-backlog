@@ -6,6 +6,14 @@ export const validGuessTheImageGame = {
   },
 };
 
+// Datos válidos para un juego de adivinar la imagen con 2 totalGames
+export const validGuessTheImageGame2 = {
+  settings: {
+    totalGames: 2,
+    duration: 60,
+  },
+};
+
 // Datos inválidos para un juego de adivinar la imagen
 export const invalidGuessTheImageGames = [
   // Faltan campos obligatorios

@@ -18,6 +18,7 @@ import {
   validCard10DeckForMatchingGame,
   validDeckForMatchingGame,
   validMatchingGame,
+  validMatchingGame2,
   invalidMatchingGames,
 } from "./utils/newMatchingGames";
 
@@ -28,6 +29,8 @@ let token: string;
 let deckId: string;
 let gameId: string;
 let matchingGameId: string;
+let gameId2: string;
+let matchingGameId2: string;
 let userId: string;
 let cardId1: string;
 let cardId2: string;
@@ -138,6 +141,14 @@ beforeAll(async () => {
 
   matchingGameId = response2.body.matchingGame._id;
   gameId = response2.body.game._id;
+
+  const response3 = await request(app)
+    .post(`${API_BASE_URL}/matchingGames`)
+    .set("Authorization", token)
+    .send({ ...validMatchingGame2, deckId });
+
+  matchingGameId2 = response3.body.matchingGame._id;
+  gameId2 = response3.body.game._id;
 });
 
 describe("MatchingGame API", () => {
@@ -171,7 +182,7 @@ describe("MatchingGame API", () => {
     expect(response.status).toBe(500);
   });
 
-  it("should complete a matching game with correct answers", async () => {
+  it("should complete a matching game with correct answers and finish the game", async () => {
     const selectedAnswer = {
       KIKO: "Texto de ejemplo en la parte trasera KIKO",
       PATO: "Texto de ejemplo en la parte trasera PATO",
@@ -182,7 +193,7 @@ describe("MatchingGame API", () => {
       CABALLO: "Texto de ejemplo en la parte trasera CABALLO",
       ELEFANTE: "Texto de ejemplo en la parte trasera ELEFANTE",
       TIGRE: "Texto de ejemplo en la parte trasera TIGRE",
-      LEON: "Texto de ejemplo en la parte trasera LEON"
+      LEON: "Texto de ejemplo en la parte trasera LEON",
     };
 
     const response = await request(app)
@@ -195,8 +206,42 @@ describe("MatchingGame API", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("currentGame", 2);
-    expect(response.body).toHaveProperty("message", "¡Felicidades! Has completado las 1 partidas de MatchingGame.");
+    expect(response.body).toHaveProperty(
+      "message",
+      "¡Felicidades! Has completado las 1 partidas de MatchingGame."
+    );
     expect(response.body).toHaveProperty("totalGames", 1);
+  }, 3000);
+
+  it("should complete a matching game with correct answers and pass to the next match", async () => {
+    const selectedAnswer = {
+      KIKO: "Texto de ejemplo en la parte trasera KIKO",
+      PATO: "Texto de ejemplo en la parte trasera PATO",
+      FAISAN: "Texto de ejemplo en la parte trasera FAISAN",
+      GATO: "Texto de ejemplo en la parte trasera GATO",
+      LILIL: "Texto de ejemplo en la parte trasera LILIL",
+      PERRO: "Texto de ejemplo en la parte trasera PERRO",
+      CABALLO: "Texto de ejemplo en la parte trasera CABALLO",
+      ELEFANTE: "Texto de ejemplo en la parte trasera ELEFANTE",
+      TIGRE: "Texto de ejemplo en la parte trasera TIGRE",
+      LEON: "Texto de ejemplo en la parte trasera LEON",
+    };
+
+    const response = await request(app)
+      .post(`${API_BASE_URL}/currentMatchingGame/${matchingGameId2}`)
+      .set("Authorization", token)
+      .send({
+        selectedAnswer,
+        countAsCompleted: true,
+      });
+
+    expect(response.status).toBe(201);
+    expect(response.body).toHaveProperty("currentGame", 2);
+    expect(response.body).toHaveProperty("totalGames", 2);
+    expect(response.body).toHaveProperty("gameId");
+    expect(response.body.gameId).toHaveProperty("completed", false);
+    expect(response.body.gameId).toHaveProperty("currentGameCount", 1);
+    expect(response.body).toHaveProperty("matchingGameId");
   }, 3000);
 
   it("should force complete a matching game", async () => {
@@ -229,7 +274,10 @@ describe("MatchingGame API", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("currentGame", 3);
-    expect(response.body).toHaveProperty("message", "¡Felicidades! Has completado las 1 partidas de MatchingGame.");
+    expect(response.body).toHaveProperty(
+      "message",
+      "¡Felicidades! Has completado las 1 partidas de MatchingGame."
+    );
     expect(response.body).toHaveProperty("totalGames", 1);
   });
 
