@@ -34,7 +34,7 @@ export const getMatchingGameById = async (
     if (!matchingGame) {
       return res
         .status(404)
-        .json({ message: "Juego de Relacionar no encontrado" });
+        .json({ message: "Juego de Relacionar Palabras no encontrado" });
     }
     return res.status(200).json(matchingGame);
   } catch (error: any) {
@@ -64,7 +64,7 @@ export const createMatchingGame = async (req: CustomRequest, res: Response) => {
     const maxGames = settings?.totalGames || 1;
 
     const game = new Game({
-      name: "Juego de Relacionar",
+      name: "Juego de Relacionar Palabras",
       user: userId,
       gameType: gameType,
       currentGameCount: 0,
@@ -85,7 +85,7 @@ export const createMatchingGame = async (req: CustomRequest, res: Response) => {
     if (textTextCards.length < 10) {
       return res.status(400).json({
         message:
-          "El mazo debe tener al menos 10 cartas de tipo txtTxt para crear un Juego de Relacionar",
+          "El mazo debe tener al menos 10 cartas de tipo txtTxt para crear un Juego de Relacionar Palabras",
       });
     }
 
@@ -220,7 +220,7 @@ export const completeCurrentGame = async (
     if (!matchingGame) {
       return res
         .status(404)
-        .json({ error: "Juego de relacionar no encontrado" });
+        .json({ error: "Juego de Relacionar Palabras no encontrado" });
     }
     matchingGame.selectedAnswer = new Map(Object.entries(selectedAnswer));
     const isAnswerCorrect = Array.from(
@@ -282,7 +282,7 @@ export const completeCurrentGame = async (
       if (textTextCards.length < 10) {
         return res.status(400).json({
           message:
-            "El mazo debe tener al menos 10 cartas de tipo txtTxt para crear un Juego de Relacionar",
+            "El mazo debe tener al menos 10 cartas de tipo txtTxt para crear un Juego de Relacionar Palabras",
         });
       }
 
@@ -330,7 +330,7 @@ export const completeCurrentGame = async (
       if (words.length < 10 || meanings.length < 10)
         return res.status(400).json({
           message:
-            "El mazo no tiene suficientes cartas con palabras válidas para crear un nuevo Juego de Relacionar",
+            "El mazo no tiene suficientes cartas con palabras válidas para crear un nuevo Juego de Relacionar Palabras",
         });
 
       const selectedWords = getRandomWords(words, matchingGame.maxWords);
@@ -439,14 +439,14 @@ export const deleteMatchingGame = async (req: CustomRequest, res: Response) => {
     if (!matchingGameId) {
       return res
         .status(400)
-        .json({ error: "El ID del juego de relacionar es obligatorio" });
+        .json({ error: "El ID del Juego de Relacionar Palabras es obligatorio" });
     }
 
     const matchingGame = await MatchingGame.findByIdAndDelete(matchingGameId);
     if (!matchingGame) {
       return res
         .status(404)
-        .json({ error: "Juedo de Relacionar no encontrado" });
+        .json({ error: "Juedo de Relacionar Palabras no encontrado" });
     }
 
     await Game.findByIdAndDelete(matchingGame.game);
