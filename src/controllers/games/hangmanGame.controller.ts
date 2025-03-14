@@ -63,7 +63,7 @@ export const createHangmanGame = async (req: CustomRequest, res: Response) => {
     const maxGames = settings?.totalGames || 1;
 
     let game = new Game({
-      name: "Juego de Ahorcado",
+      name: "Juego del Ahorcado",
       user: userId,
       gameType: gameType,
       currentGameCount: 0,
@@ -147,7 +147,7 @@ export const completeCurrentGame = async (
       "game"
     );
     if (!hangmanGame)
-      return res.status(404).json({ error: "Juego de Ahorcado no encontrado" });
+      return res.status(404).json({ error: "Juego del Ahorcado no encontrado" });
 
     const game = await Game.findById(hangmanGame.game);
     if (!game) {
