@@ -44,8 +44,8 @@ const letterOrderGameSchema = new Schema({
   numWords: {
     type: Number,
     required: [true, "El número de palabras es obligatorio"],
-    min: [1, "El número de palabras debe estar entre 1 y 3"],
-    max: [3, "El número de palabras debe estar entre 1 y 3"],
+    min: [1, "El número de palabras debe estar entre 1 y 2"],
+    max: [2, "El número de palabras debe estar entre 1 y 2"],
   },
   duration: {
     type: Number,

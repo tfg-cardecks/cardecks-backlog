@@ -3,7 +3,7 @@ export const validLetterOrderGame = {
   settings: {
     totalGames: 1,
     duration: 60,
-    numWords: 3,
+    numWords: 2,
   },
 };
 
@@ -12,7 +12,7 @@ export const validLetterOrderGame2 = {
   settings: {
     totalGames: 2,
     duration: 60,
-    numWords: 3,
+    numWords: 2,
   },
 };
 
@@ -31,7 +31,7 @@ export const invalidLetterOrderGames = [
         status: "inProgress",
       },
     ],
-    numWords: 3,
+    numWords: 2,
     duration: 60,
     status: "inProgress",
   },
@@ -58,7 +58,7 @@ export const invalidLetterOrderGames = [
         status: "inProgress",
       },
     ],
-    numWords: 3,
+    numWords: 2,
     duration: 60,
     status: "inProgress",
   },
