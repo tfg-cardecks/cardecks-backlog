@@ -56,25 +56,10 @@ export const createHangmanGame = async (req: CustomRequest, res: Response) => {
     if (!user)
       return res.status(404).json({ message: "Usuario no encontrado" });
 
-    if (!user.gamesCompletedByType)
+    if (!user.gamesCompletedByType) {
       user.gamesCompletedByType = new Map<string, number>();
-
-    const gameType = "HangmanGame";
-    const maxGames = settings?.totalGames || 1;
-
-    let game = new Game({
-      name: "Juego del Ahorcado",
-      user: userId,
-      gameType: gameType,
-      currentGameCount: 0,
-      totalGames: maxGames,
-      completed: false,
-      deck: deckId,
-    });
-
-    await game.save();
-    user.games.push(game._id);
-    await user.save();
+      await user.save();
+    }
 
     const deck = await Deck.findById(deckId).populate("cards");
     if (!deck) return res.status(404).json({ message: "Mazo no encontrado" });
@@ -93,6 +78,23 @@ export const createHangmanGame = async (req: CustomRequest, res: Response) => {
         message:
           "El mazo no tiene suficientes palabras válidas para crear un nuevo Juego del Ahorcado",
       });
+
+    const gameType = "HangmanGame";
+    const maxGames = settings?.totalGames || 1;
+
+    let game = new Game({
+      name: "Juego del Ahorcado",
+      user: userId,
+      gameType: gameType,
+      currentGameCount: 0,
+      totalGames: maxGames,
+      completed: false,
+      deck: deckId,
+    });
+
+    await game.save();
+    user.games.push(game._id);
+    await user.save();
 
     const selectedWords = getRandomWords(words, 5);
 
@@ -147,7 +149,9 @@ export const completeCurrentGame = async (
       "game"
     );
     if (!hangmanGame)
-      return res.status(404).json({ error: "Juego del Ahorcado no encontrado" });
+      return res
+        .status(404)
+        .json({ error: "Juego del Ahorcado no encontrado" });
 
     const game = await Game.findById(hangmanGame.game);
     if (!game) {

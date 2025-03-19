@@ -62,8 +62,28 @@ export const createLetterOrderGame = async (
     if (!user)
       return res.status(404).json({ message: "Usuario no encontrado" });
 
-    if (!user.gamesCompletedByType)
+    if (!user.gamesCompletedByType) {
       user.gamesCompletedByType = new Map<string, number>();
+      await user.save();
+    }
+
+    const deck = await Deck.findById(deckId).populate("cards");
+    if (!deck) return res.status(404).json({ message: "Mazo no encontrado" });
+
+    const words = deck.cards
+      .flatMap((card: any) =>
+        card.frontSide.text.map((textObj: any) => cleanWord(textObj.content))
+      )
+      .filter(
+        (text: string, index, self) =>
+          text.length > 0 && text.length <= 9 && self.indexOf(text) === index
+      );
+
+    if (words.length < 8)
+      return res.status(400).json({
+        message:
+          "El mazo no tiene suficientes palabras válidas para crear un nuevo Juego de Ordenar Letras",
+      });
 
     const gameType = "LetterOrderGame";
     const maxGames = settings?.totalGames || 1;
@@ -83,24 +103,6 @@ export const createLetterOrderGame = async (
     await game.save();
     user.games.push(game._id);
     await user.save();
-
-    const deck = await Deck.findById(deckId).populate("cards");
-    if (!deck) return res.status(404).json({ message: "Mazo no encontrado" });
-
-    const words = deck.cards
-      .flatMap((card: any) =>
-        card.frontSide.text.map((textObj: any) => cleanWord(textObj.content))
-      )
-      .filter(
-        (text: string, index, self) =>
-          text.length > 0 && text.length <= 9 && self.indexOf(text) === index
-      );
-
-    if (words.length < 8)
-      return res.status(400).json({
-        message:
-          "El mazo no tiene suficientes palabras válidas para crear un nuevo Juego de Ordenar Letras",
-      });
 
     const selectedWords = getRandomWords(words, settings?.numWords || 1);
 
@@ -214,9 +216,7 @@ export const completeCurrentGame = async (
 
       await game.save();
 
-      const deck = await Deck.findById(letterOrderGame.deck).populate(
-        "cards"
-      );
+      const deck = await Deck.findById(letterOrderGame.deck).populate("cards");
       if (!deck) return res.status(404).json({ error: "Mazo no encontrado" });
 
       const words = deck.cards

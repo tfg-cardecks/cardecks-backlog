@@ -59,27 +59,10 @@ export const createGuessTheImageGame = async (
     if (!user)
       return res.status(404).json({ message: "Usuario no encontrado" });
 
-    if (!user.gamesCompletedByType)
+    if (!user.gamesCompletedByType) {
       user.gamesCompletedByType = new Map<string, number>();
-
-    const gameType = "GuessTheImageGame";
-    const maxGames = settings?.totalGames || 1;
-
-    const game = new Game({
-      name: "Adivinar la Imagen",
-      description:
-        "Un juego interactivo donde debes adivinar la imagen correcta.",
-      user: userId,
-      gameType: gameType,
-      currentGameCount: 0,
-      totalGames: maxGames,
-      completed: false,
-      deck: deckId,
-    });
-
-    await game.save();
-    user.games.push(game._id);
-    await user.save();
+      await user.save();
+    }
 
     const deck = await Deck.findById(deckId).populate("cards");
     if (!deck) return res.status(404).json({ message: "Mazo no encontrado" });
@@ -113,6 +96,25 @@ export const createGuessTheImageGame = async (
         message:
           "El mazo no tiene suficientes cartas con imágenes y palabras válidas para crear un nuevo Juego de Adivinar la Imagen",
       });
+
+    const gameType = "GuessTheImageGame";
+    const maxGames = settings?.totalGames || 1;
+
+    const game = new Game({
+      name: "Adivinar la Imagen",
+      description:
+        "Un juego interactivo donde debes adivinar la imagen correcta.",
+      user: userId,
+      gameType: gameType,
+      currentGameCount: 0,
+      totalGames: maxGames,
+      completed: false,
+      deck: deckId,
+    });
+
+    await game.save();
+    user.games.push(game._id);
+    await user.save();
 
     const randomIndex = Math.floor(Math.random() * images.length);
     const image = images[randomIndex];

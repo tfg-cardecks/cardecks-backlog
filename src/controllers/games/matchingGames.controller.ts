@@ -57,24 +57,10 @@ export const createMatchingGame = async (req: CustomRequest, res: Response) => {
     if (!user)
       return res.status(404).json({ message: "Usuario no encontrado" });
 
-    if (!user.gamesCompletedByType)
+    if (!user.gamesCompletedByType) {
       user.gamesCompletedByType = new Map<string, number>();
-
-    const gameType = "MatchingGame";
-    const maxGames = settings?.totalGames || 1;
-
-    const game = new Game({
-      name: "Juego de Relacionar Palabras",
-      user: userId,
-      gameType: gameType,
-      currentGameCount: 0,
-      totalGames: maxGames,
-      completed: false,
-      deck: deckId,
-    });
-    await game.save();
-    user.games.push(game._id);
-    await user.save();
+      await user.save();
+    }
 
     const deck = await Deck.findById(deckId).populate("cards");
     if (!deck) return res.status(404).json({ message: "Mazo no encontrado" });
@@ -136,6 +122,22 @@ export const createMatchingGame = async (req: CustomRequest, res: Response) => {
         message:
           "El mazo no tiene suficientes cartas con imágenes y palabras válidas para crear un nuevo Juego de Adivinar la Imagen",
       });
+
+    const gameType = "MatchingGame";
+    const maxGames = settings?.totalGames || 1;
+
+    const game = new Game({
+      name: "Juego de Relacionar Palabras",
+      user: userId,
+      gameType: gameType,
+      currentGameCount: 0,
+      totalGames: maxGames,
+      completed: false,
+      deck: deckId,
+    });
+    await game.save();
+    user.games.push(game._id);
+    await user.save();
 
     const selectedWords = getRandomWords(words, settings?.maxWords || 2);
     const selectedMeanings = selectedWords.map((word) =>
@@ -437,9 +439,9 @@ export const deleteMatchingGame = async (req: CustomRequest, res: Response) => {
     }
 
     if (!matchingGameId) {
-      return res
-        .status(400)
-        .json({ error: "El ID del Juego de Relacionar Palabras es obligatorio" });
+      return res.status(400).json({
+        error: "El ID del Juego de Relacionar Palabras es obligatorio",
+      });
     }
 
     const matchingGame = await MatchingGame.findByIdAndDelete(matchingGameId);
