@@ -10,8 +10,7 @@ const createCardCanvas = (width: number, height: number) => {
 const drawText = (ctx: any, textArray: any[], isBackSide: boolean) => {
   textArray.forEach((text) => {
     ctx.fillStyle = text.color || "#000000";
-    ctx.font = `${text.fontSize || 16}px 'DejaVu Sans'`;
-//    ctx.font = `${text.fontSize || 16}px Arial`;
+    ctx.font = `${text.fontSize || 16}px `;
     const lines = wrapText(ctx, text.content, 250, isBackSide);
     lines.forEach((line, index) => {
       ctx.fillText(line, text.left, text.top + index * (text.fontSize || 16));
@@ -123,9 +122,9 @@ const drawCardTitleAndTheme = (ctx: any, cardData: any) => {
   ctx.fillRect(0, 0, 300, 500);
 
   ctx.fillStyle = "#000000";
-  ctx.font = "20px 'DejaVu Sans'";
+  ctx.font = "20px ";
   ctx.fillText(cardData.title, 10, 30);
-  ctx.font = "16px 'DejaVu Sans'";
+  ctx.font = "16px ";
   ctx.fillText(cardData.theme, 10, 60);
 };
 
@@ -142,7 +141,7 @@ export const generateCardImage = async (cardData: any, suffix: string, fontSize:
     const canvas = createCardCanvas(cardWidth, cardHeight);
     const ctx = canvas.getContext("2d");
 
-    ctx.font = `${fontSize}px 'DejaVu Sans'`;
+    ctx.font = `${fontSize}px `;
 
     await drawCardSide(ctx, canvas, cardData, cardData.frontSide, "front");
     if (!fs.existsSync(path.join(__dirname, `../images/`))) {
