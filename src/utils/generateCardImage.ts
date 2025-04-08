@@ -123,9 +123,9 @@ const drawCardTitleAndTheme = (ctx: any, cardData: any) => {
   ctx.fillRect(0, 0, 300, 500);
 
   ctx.fillStyle = "#000000";
-  ctx.font = "20px Arial";
+  ctx.font = "20px 'DejaVu Sans'";
   ctx.fillText(cardData.title, 10, 30);
-  ctx.font = "16px Arial";
+  ctx.font = "16px 'DejaVu Sans'";
   ctx.fillText(cardData.theme, 10, 60);
 };
 
@@ -142,7 +142,7 @@ export const generateCardImage = async (cardData: any, suffix: string, fontSize:
     const canvas = createCardCanvas(cardWidth, cardHeight);
     const ctx = canvas.getContext("2d");
 
-    ctx.font = `${fontSize}px Arial`;
+    ctx.font = `${fontSize}px 'DejaVu Sans'`;
 
     await drawCardSide(ctx, canvas, cardData, cardData.frontSide, "front");
     if (!fs.existsSync(path.join(__dirname, `../images/`))) {
