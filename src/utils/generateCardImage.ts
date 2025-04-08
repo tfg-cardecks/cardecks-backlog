@@ -10,7 +10,8 @@ const createCardCanvas = (width: number, height: number) => {
 const drawText = (ctx: any, textArray: any[], isBackSide: boolean) => {
   textArray.forEach((text) => {
     ctx.fillStyle = text.color || "#000000";
-    ctx.font = `${text.fontSize || 16}px Arial`;
+    ctx.font = `${text.fontSize || 16}px 'DejaVu Sans'`;
+//    ctx.font = `${text.fontSize || 16}px Arial`;
     const lines = wrapText(ctx, text.content, 250, isBackSide);
     lines.forEach((line, index) => {
       ctx.fillText(line, text.left, text.top + index * (text.fontSize || 16));
