@@ -22,6 +22,15 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(cors());
 
+app.use("/images", (_req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
+app.use("/images", express.static(path.join(__dirname, "images")));
+
 app.use("/api/auth", authRoutes);
 app.use("/api", cardRoutes);
 app.use("/api", deckRoutes);
@@ -36,8 +45,6 @@ app.use("/api", letterOrderGame);
 app.get("/", (_req: Request, res: Response) => {
   res.redirect("/api-docs/");
 });
-
-app.use("/images", express.static(path.join(__dirname, "images")));
 
 expressOasGenerator.handleResponses(app, {
   mongooseModels: [
