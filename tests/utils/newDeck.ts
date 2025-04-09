@@ -57,12 +57,7 @@ export const badDecks = [
   {
     name: "Deck Name",
     description:
-      "Esta es una descripción de deck demasiado larga para ser aceptada por el sistema. " +
-      "Debe ser más corta para cumplir con los requisitos del esquema. " +
-      "Esta es una descripción de deck demasiado larga para ser aceptada por el sistema. " +
-      "Debe ser más corta para cumplir con los requisitos del esquema. " +
-      "Esta es una descripción de deck demasiado larga para ser aceptada por el sistema. " +
-      "Debe ser más corta para cumplir con los requisitos del esquema.",
+      "Esta es una descripción de deck demasiado larga para ser aceptada por el sistema. Debe ser más corta para cumplir con los requisitos del esquema. Esta es una descripción de deck demasiado larga para ser aceptada por el sistema. Debe ser más corta para cumplir con los requisitos del esquema. Esta es una descripción de deck demasiado larga para ser aceptada por el sistema. Debe ser más corta para cumplir con los requisitos del esquema. Esta es una descripción de deck demasiado larga para ser aceptada por el sistema. Debe ser más corta para cumplir con los requisitos del esquema. Esta es una descripción de deck demasiado larga para ser aceptada por el sistema. Debe ser más corta para cumplir con los requisitos del esquema.",
     theme: "Deck Theme",
   },
   // Theme too long
