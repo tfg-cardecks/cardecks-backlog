@@ -165,7 +165,6 @@ describe("Testing create deck method", () => {
         .post(`${API_BASE_URL}/decks`)
         .set("Authorization", token)
         .send(badDeck);
-        console.log(response.body);
       expect(response.status).toBe(400);
     });
   });
