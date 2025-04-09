@@ -26,11 +26,17 @@ app.use("/images", (_req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  
+  // Ajustar los encabezados de caché
+  res.header("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.header("Pragma", "no-cache");
+  res.header("Expires", "0");
+  res.header("Surrogate-Control", "no-store");
+
   next();
 });
 
 app.use("/images", express.static(path.join(__dirname, "images")));
-
 app.use("/api/auth", authRoutes);
 app.use("/api", cardRoutes);
 app.use("/api", deckRoutes);
