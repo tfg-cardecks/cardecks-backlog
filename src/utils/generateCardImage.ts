@@ -10,7 +10,7 @@ const createCardCanvas = (width: number, height: number) => {
 const drawText = (ctx: any, textArray: any[], isBackSide: boolean) => {
   textArray.forEach((text) => {
     ctx.fillStyle = text.color || "#000000";
-    ctx.font = `${text.fontSize || 16}px `;
+    ctx.font = `${text.fontSize || 16}px "DejaVu Sans"`;
     const lines = wrapText(ctx, text.content, 250, isBackSide);
     lines.forEach((line, index) => {
       ctx.fillText(line, text.left, text.top + index * (text.fontSize || 16));
@@ -122,9 +122,9 @@ const drawCardTitleAndTheme = (ctx: any, cardData: any) => {
   ctx.fillRect(0, 0, 300, 500);
 
   ctx.fillStyle = "#000000";
-  ctx.font = "20px ";
+  ctx.font = `20px "DejaVu Sans"`;
   ctx.fillText(cardData.title, 10, 30);
-  ctx.font = "16px ";
+  ctx.font = `16px "DejaVu Sans"`;
   ctx.fillText(cardData.theme, 10, 60);
 };
 
