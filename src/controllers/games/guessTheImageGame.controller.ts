@@ -9,8 +9,8 @@ import { handleValidationErrors } from "../../validators/validate";
 import { CustomRequest } from "../../interfaces/customRequest";
 
 function cleanWord(word: string): string {
-  const withoutSpecialChars = word.replace(/[^A-Z\s]/gi, "");
-  return withoutSpecialChars.toUpperCase();
+  const withoutSpecialChars = word.replace(/[?!\d]/g, "");
+  return withoutSpecialChars.trim().toUpperCase();
 }
 
 export const getGuessTheImageGames = async (_req: Request, res: Response) => {

@@ -10,8 +10,8 @@ import { CustomRequest } from "../../interfaces/customRequest";
 import { Card } from "../../models/card";
 
 function cleanWord(word: string): string {
-  const withoutSpecialChars = word.replace(/[^A-Z0-9\s]/gi, "");
-  return withoutSpecialChars.toUpperCase();
+  const withoutSpecialChars = word.replace(/[?!\d]/g, "");
+  return withoutSpecialChars.trim().toUpperCase();
 }
 
 export const getMatchingGames = async (_req: Request, res: Response) => {
