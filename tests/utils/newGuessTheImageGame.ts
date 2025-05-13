@@ -1,7 +1,15 @@
 // Datos válidos para un juego de adivinar la imagen
 export const validGuessTheImageGame = {
   settings: {
-    totalGames: 5,
+    totalGames: 1,
+    duration: 60,
+  },
+};
+
+// Datos válidos para un juego de adivinar la imagen con 2 totalGames
+export const validGuessTheImageGame2 = {
+  settings: {
+    totalGames: 2,
     duration: 60,
   },
 };
@@ -84,7 +92,7 @@ export const validCard2DeckForGuessTheImageGame = {
   backSide: {
     images: [
       {
-        url: "https://static.fundacion-affinity.org/cdn/farfuture/PVbbIC-0M9y4fPbbCsdvAD8bcjjtbFc0NSP3lRwlWcE/mtime:1643275542/sites/default/files/los-10-sonidos-principales-del-perro.jpg",
+        url: "https://es.mypet.com/wp-content/uploads/sites/23/2021/03/GettyImages-1143107320-e1597136744606.jpg",
       },
     ],
   },

@@ -1,10 +1,19 @@
 // Datos válidos para un juego de Hangman
 export const validHangmanGame = {
   settings: {
-    totalGames: 5,
+    totalGames: 1,
     duration: 60,
   },
 };
+
+// Datos válidos para un juego de Hangman
+export const validHangmanGame2 = {
+  settings: {
+    totalGames: 2,
+    duration: 60,
+  },
+};
+
 
 // Datos inválidos para un juego de Hangman
 export const invalidHangmanGames = [

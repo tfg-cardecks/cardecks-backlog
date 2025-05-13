@@ -53,36 +53,25 @@ export const badDecks = [
     description: "Deck Description",
     theme: "Deck Theme",
   },
-    // Description too long
-    {
-      name: "Deck Name",
-      description: "Esta es una descripción de deck demasiado larga para ser aceptada por el sistema. " +
-                   "Debe ser más corta para cumplir con los requisitos del esquema. " +
-                   "Esta es una descripción de deck demasiado larga para ser aceptada por el sistema. " +
-                   "Debe ser más corta para cumplir con los requisitos del esquema. " +
-                   "Esta es una descripción de deck demasiado larga para ser aceptada por el sistema. " +
-                   "Debe ser más corta para cumplir con los requisitos del esquema.",
-      theme: "Deck Theme",
-    },
-    // Theme too long
-    {
-      name: "Deck Name",
-      description: "Deck Description",
-      theme: "El tema que uso es este que es un tema de deck demasiado largo para ser aceptado por el sistema",
-    },
-    // Cards with invalid ObjectId
+  // Description too long
+  {
+    name: "Deck Name",
+    description:
+      "Esta es una descripción de deck demasiado larga para ser aceptada por el sistema. Debe ser más corta para cumplir con los requisitos del esquema. Esta es una descripción de deck demasiado larga para ser aceptada por el sistema. Debe ser más corta para cumplir con los requisitos del esquema. Esta es una descripción de deck demasiado larga para ser aceptada por el sistema. Debe ser más corta para cumplir con los requisitos del esquema. Esta es una descripción de deck demasiado larga para ser aceptada por el sistema. Debe ser más corta para cumplir con los requisitos del esquema. Esta es una descripción de deck demasiado larga para ser aceptada por el sistema. Debe ser más corta para cumplir con los requisitos del esquema.",
+    theme: "Deck Theme",
+  },
+  // Theme too long
+  {
+    name: "Deck Name",
+    description: "Deck Description",
+    theme:
+      "El tema que uso es este que es un tema de deck demasiado largo para ser aceptado por el sistema",
+  },
+  // Cards with invalid ObjectId
   {
     name: "Deck Name",
     description: "Deck Description",
     theme: "Deck Theme",
     cards: ["invalidObjectId"],
   },
-    // Duplicate name (assuming "Deck Name" already exists in the database)
-    {
-      name: "Deck Name",
-      description: "Deck Description",
-      theme: "Deck Theme",
-    },
-  
 ];
-  

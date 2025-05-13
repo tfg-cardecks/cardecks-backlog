@@ -10,7 +10,7 @@ const createCardCanvas = (width: number, height: number) => {
 const drawText = (ctx: any, textArray: any[], isBackSide: boolean) => {
   textArray.forEach((text) => {
     ctx.fillStyle = text.color || "#000000";
-    ctx.font = `${text.fontSize || 16}px Arial`;
+    ctx.font = `${text.fontSize || 16}px `;
     const lines = wrapText(ctx, text.content, 250, isBackSide);
     lines.forEach((line, index) => {
       ctx.fillText(line, text.left, text.top + index * (text.fontSize || 16));
@@ -18,7 +18,12 @@ const drawText = (ctx: any, textArray: any[], isBackSide: boolean) => {
   });
 };
 
-const wrapText = (ctx: any, text: string, maxWidth: number, isBackSide: boolean) => {
+const wrapText = (
+  ctx: any,
+  text: string,
+  maxWidth: number,
+  isBackSide: boolean
+) => {
   const words = text.split(" ");
   let lines = [];
   let currentLine = words[0];
@@ -34,7 +39,10 @@ const wrapText = (ctx: any, text: string, maxWidth: number, isBackSide: boolean)
 
       if (isBackSide) {
         while (ctx.measureText(word).width > maxWidth) {
-          let part = word.slice(0, Math.floor(word.length * maxWidth / ctx.measureText(word).width));
+          let part = word.slice(
+            0,
+            Math.floor((word.length * maxWidth) / ctx.measureText(word).width)
+          );
           let partWidth = ctx.measureText(part).width;
 
           while (partWidth > maxWidth) {
@@ -63,7 +71,13 @@ const drawImages = async (ctx: any, imagesArray: any[]) => {
         const increasedHeight = image.height * 1.4;
         const increasedLeft = image.left * 0.2;
         const increasedTop = image.top * 0.6;
-        ctx.drawImage(img, increasedLeft, increasedTop, increasedWidth, increasedHeight);
+        ctx.drawImage(
+          img,
+          increasedLeft,
+          increasedTop,
+          increasedWidth,
+          increasedHeight
+        );
       } catch (error) {
         console.error(`Error al cargar la imagen ${image.url}:`, error);
         throw error;
@@ -82,6 +96,7 @@ const drawCardSide = async (
   clearCanvas(ctx, canvas);
 
   if (side === "front") {
+
     drawCardTitleAndTheme(ctx, cardData);
   } else {
     ctx.fillStyle = "#FFFFFF";
@@ -108,11 +123,12 @@ const drawCardTitleAndTheme = (ctx: any, cardData: any) => {
   ctx.fillRect(0, 0, 300, 500);
 
   ctx.fillStyle = "#000000";
-  ctx.font = "20px Arial";
+  ctx.font = "20px ";
   ctx.fillText(cardData.title, 10, 30);
-  ctx.font = "16px Arial";
+  ctx.font = "16px ";
   ctx.fillText(cardData.theme, 10, 60);
 };
+
 
 const saveImageToFile = (canvas: any, imagePath: string) => {
   const buffer = canvas.toBuffer("image/png");
@@ -128,6 +144,10 @@ export const editCardImage = async (cardData: any, suffix: string) => {
     const ctx = canvas.getContext("2d");
 
     await drawCardSide(ctx, canvas, cardData, cardData.frontSide, "front");
+    if (!fs.existsSync(path.join(__dirname, `../images/`))) {
+      fs.mkdirSync(path.join(__dirname, `../images/`));
+    }
+
     const frontImagePath = path.join(
       __dirname,
       `../images/${cardData.title}_${suffix}_front.png`

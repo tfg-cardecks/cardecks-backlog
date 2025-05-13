@@ -100,27 +100,31 @@ export const updateCard = async (req: Request, res: Response) => {
 
     cardData._id = existingCard._id;
 
+    if (!cardData.theme) {
+      cardData.theme = existingCard.theme;
+    }
+    cardData.title = cardData.title || existingCard.title;
+    cardData.theme = cardData.theme || existingCard.theme;
+
+
     const frontSideModified =
       JSON.stringify(existingCard.frontSide) !==
       JSON.stringify(cardData.frontSide);
     const backSideModified =
       JSON.stringify(existingCard.backSide) !==
       JSON.stringify(cardData.backSide);
+    const themeModified = existingCard.theme !== cardData.theme;
 
     const suffix = Date.now().toString();
 
-    if (frontSideModified || backSideModified) {
+    if (frontSideModified || backSideModified || themeModified) {
       try {
         const { frontImageUrl, backImageUrl } = await editCardImage(
           cardData,
           suffix
         );
-        if (frontSideModified) {
-          cardData.frontImageUrl = frontImageUrl;
-        }
-        if (backSideModified) {
-          cardData.backImageUrl = backImageUrl;
-        }
+        cardData.frontImageUrl = frontImageUrl;
+        cardData.backImageUrl = backImageUrl;
       } catch (imageError) {
         const errorMessage =
           imageError instanceof Error
@@ -148,6 +152,7 @@ export const updateCard = async (req: Request, res: Response) => {
 
     if (!updatedCard)
       return res.status(404).json({ message: "Carta no encontrada" });
+
     return res.status(200).json(updatedCard);
   } catch (error: any) {
     handleSpecificValidationErrors(error, res);

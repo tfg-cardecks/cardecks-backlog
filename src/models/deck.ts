@@ -8,7 +8,6 @@ const deckSchema = new Schema({
     required: [true, "El nombre es obligatorio"],
     maxlength: [50, "Nombre demasiado largo"],
     minlength: [3, "Nombre demasiado corto"],
-    unique: true,
   },
   description: {
     type: String,

@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { Schema } from "mongoose";
 
-const wordSearchGameSchema = new Schema({
+const matchingGameSchema = new Schema({
   game: {
     type: Schema.Types.ObjectId,
     ref: "Game",
@@ -17,22 +17,40 @@ const wordSearchGameSchema = new Schema({
     ref: "Deck",
     required: [true, "El mazo es obligatorio"],
   },
-  grid: {
-    type: [[String]],
-    required: [true, "La cuadrícula es obligatoria"],
-  },
   words: {
     type: [String],
     required: [true, "Las palabras son obligatorias"],
+    validate: {
+      validator: function (words: string[]) {
+        return words.length >= 2 && words.length <= 4;
+      },
+      message: "El total de palabras debe estar entre 2 y 4",
+    },
+  },
+  options: {
+    type: [String],
+    required: [true, "Las opciones son obligatorias"],
+    validate: {
+      validator: function (options: string[]) {
+        return options.length === (this as any).words.length * 2;
+      },
+      message: "El número de opciones debe ser el doble del número de palabras",
+    },
+  },
+  correctAnswer: {
+    type: Map,
+    of: String,
+    required: [true, "Las respuestas correctas son obligatorias"],
+  },
+  selectedAnswer: {
+    type: Map,
+    of: String,
+    default: {},
   },
   status: {
     type: String,
     default: "inProgress",
     enum: ["inProgress", "completed"],
-  },
-  foundWords: {
-    type: [String],
-    default: [],
   },
   duration: {
     type: Number,
@@ -48,8 +66,8 @@ const wordSearchGameSchema = new Schema({
   }
 });
 
-export const WordSearchGame = mongoose.model(
-  "WordSearchGame",
-  wordSearchGameSchema,
-  "wordSearchGames"
+export const MatchingGame = mongoose.model(
+  "MatchingGame",
+  matchingGameSchema,
+  "matchingGames"
 );

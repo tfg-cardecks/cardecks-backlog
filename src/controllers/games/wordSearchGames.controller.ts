@@ -53,24 +53,10 @@ export const createWordSearchGame = async (
     if (!user)
       return res.status(404).json({ message: "Usuario no encontrado" });
 
-    if (!user.gamesCompletedByType)
+    if (!user.gamesCompletedByType) {
       user.gamesCompletedByType = new Map<string, number>();
-
-    const gameType = "WordSearchGame";
-    const maxGames = settings.totalGames;
-
-    const game = new Game({
-      name: "Sopa de letras",
-      user: userId,
-      gameType: gameType,
-      currentGameCount: 0,
-      totalGames: maxGames,
-      completed: false,
-      deck: deckId,
-    });
-    await game.save();
-    user.games.push(game._id);
-    await user.save();
+      await user.save();
+    }
 
     const deck = await Deck.findById(deckId).populate("cards");
     if (!deck) return res.status(404).json({ message: "Mazo no encontrado" });
@@ -87,16 +73,33 @@ export const createWordSearchGame = async (
           "El mazo no tiene suficientes palabras válidas para crear una nueva sopa de letras",
       });
 
-    const selectedWords = getRandomWords(words, settings.maxWords);
+    const selectedWords = getRandomWords(words, settings?.maxWords || 2);
     const { grid, error } = generateWordSearchGrid(
       selectedWords,
       10,
-      settings.maxWords
+      settings?.maxWords || 2
     );
 
     if (error) {
       return res.status(400).json({ message: error });
     }
+
+    const gameType = "WordSearchGame";
+    const maxGames = settings?.totalGames || 1;
+
+    const game = new Game({
+      name: "Sopa de letras",
+      user: userId,
+      gameType: gameType,
+      currentGameCount: 0,
+      totalGames: maxGames,
+      completed: false,
+      deck: deckId,
+    });
+
+    await game.save();
+    user.games.push(game._id);
+    await user.save();
 
     const wordSearchGame = new WordSearchGame({
       game: game._id,
@@ -104,8 +107,8 @@ export const createWordSearchGame = async (
       deck: deckId,
       grid,
       words: selectedWords,
-      duration: settings.duration,
-      maxWords: settings.maxWords,
+      duration: settings?.duration || 60,
+      maxWords: settings?.maxWords || 2,
       status: "inProgress",
     });
 

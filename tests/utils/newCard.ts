@@ -346,24 +346,4 @@ export const badCards = [
       ],
     },
   },
-  // unique title
-  {
-    title: "Card Title",
-    theme: "Card Theme",
-    cardType: "txtTxt",
-    frontSide: {
-      text: [
-        {
-          content: "Texto de ejemplo en la parte delantera",
-        },
-      ],
-    },
-    backSide: {
-      text: [
-        {
-          content: "Texto de ejemplo en la parte trasera",
-        },
-      ],
-    },
-  },
 ];

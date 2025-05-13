@@ -2,7 +2,7 @@ import { Response, Request } from "express";
 
 // local imports
 import { Game } from "../../models/game";
-import { HangmanGame } from "../../models/games/hangmanGame";
+import { LetterOrderGame } from "../../models/games/letterOrderGame";
 import { User } from "../../models/user";
 import { Deck } from "../../models/deck";
 import { handleValidationErrors } from "../../validators/validate";
@@ -16,32 +16,38 @@ function cleanWord(word: string): string {
   return withoutAccents.replace(/[^A-Z]/gi, "").toUpperCase();
 }
 
-export const getHangmanGames = async (_req: Request, res: Response) => {
+export const getLetterOrderGames = async (_req: Request, res: Response) => {
   try {
-    const hangmanGames = await HangmanGame.find();
-    res.status(200).json(hangmanGames);
+    const letterOrderGames = await LetterOrderGame.find();
+    res.status(200).json(letterOrderGames);
   } catch (error) {
     res.status(500).json({ message: error });
   }
 };
 
-export const getHangmanGameById = async (req: CustomRequest, res: Response) => {
+export const getLetterOrderGameById = async (
+  req: CustomRequest,
+  res: Response
+) => {
   try {
-    const hangmanGame = await HangmanGame.findById(req.params.id).populate(
-      "game"
-    );
-    if (!hangmanGame) {
+    const letterOrderGame = await LetterOrderGame.findById(
+      req.params.id
+    ).populate("game");
+    if (!letterOrderGame) {
       return res
         .status(404)
-        .json({ message: "Juego del Ahorcado no encontrado" });
+        .json({ message: "Juego de Ordenar Letras no encontrado" });
     }
-    return res.status(200).json(hangmanGame);
+    return res.status(200).json(letterOrderGame);
   } catch (error: any) {
     return res.status(500).json({ message: error });
   }
 };
 
-export const createHangmanGame = async (req: CustomRequest, res: Response) => {
+export const createLetterOrderGame = async (
+  req: CustomRequest,
+  res: Response
+) => {
   try {
     const { deckId, settings } = req.body;
     const userId = req.user?.id;
@@ -70,20 +76,22 @@ export const createHangmanGame = async (req: CustomRequest, res: Response) => {
       )
       .filter(
         (text: string, index, self) =>
-          text.length <= 10 && self.indexOf(text) === index
+          text.length > 0 && text.length <= 9 && self.indexOf(text) === index
       );
 
-    if (words.length < 5)
+    if (words.length < 8)
       return res.status(400).json({
         message:
-          "El mazo no tiene suficientes palabras válidas para crear un nuevo Juego del Ahorcado",
+          "El mazo no tiene suficientes palabras válidas para crear un nuevo Juego de Ordenar Letras",
       });
 
-    const gameType = "HangmanGame";
+    const gameType = "LetterOrderGame";
     const maxGames = settings?.totalGames || 1;
 
-    let game = new Game({
-      name: "Juego del Ahorcado",
+    const game = new Game({
+      name: "Ordenar Letras",
+      description:
+        "Un juego interactivo donde debes ordenar las Letras para formar la palabra correcta.",
       user: userId,
       gameType: gameType,
       currentGameCount: 0,
@@ -96,29 +104,31 @@ export const createHangmanGame = async (req: CustomRequest, res: Response) => {
     user.games.push(game._id);
     await user.save();
 
-    const selectedWords = getRandomWords(words, 5);
+    const selectedWords = getRandomWords(words, settings?.numWords || 1);
 
-    const hangmanGame = new HangmanGame({
+    const letterOrderGame = new LetterOrderGame({
       game: game._id,
       user: userId,
       deck: deck._id,
-      words: selectedWords,
-      currentWordIndex: 0,
-      currentWord: selectedWords[0],
-      status: "inProgress",
-      foundLetters: [],
-      wrongLetters: [],
+      words: selectedWords.map((word: string) => ({
+        grid: shuffleArray(word.split("")),
+        word: word,
+        foundLetters: [],
+        status: "inProgress",
+      })),
+      numWords: selectedWords.length,
       duration: settings?.duration || 60,
+      status: "inProgress",
     });
 
-    await hangmanGame.save();
+    await letterOrderGame.save();
 
     game.currentGameCount += 1;
     await game.save();
     return res.status(201).json({
       message: "Juego creado con éxito",
       game,
-      hangmanGame,
+      letterOrderGame,
       currentGame: game.currentGameCount,
       totalGames: maxGames,
     });
@@ -132,49 +142,42 @@ function getRandomWords(words: string[], count: number): string[] {
   return shuffled.slice(0, count);
 }
 
+function shuffleArray(array: any[]) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
 export const completeCurrentGame = async (
   req: CustomRequest,
   res: Response
 ) => {
   try {
-    const { hangmanGameId } = req.params;
-    const {
-      countAsCompleted = true,
-      forceComplete = false,
-      guessedLetters,
-      wrongLetters,
-    } = req.body;
+    const { letterOrderGameId } = req.params;
     const userId = req.user?.id;
-    const hangmanGame = await HangmanGame.findById(hangmanGameId).populate(
-      "game"
-    );
-    if (!hangmanGame)
+    const { countAsCompleted = true, forceComplete = false } = req.body;
+
+    const letterOrderGame = await LetterOrderGame.findById(
+      letterOrderGameId
+    ).populate("game");
+    if (!letterOrderGame)
       return res
         .status(404)
-        .json({ error: "Juego del Ahorcado no encontrado" });
+        .json({ error: "Juego de Ordenar Letras no encontrado" });
 
-    const game = await Game.findById(hangmanGame.game);
-    if (!game) {
-      return res.status(404).json({ message: "Juego no encontrado" });
-    }
-
-    hangmanGame.foundLetters = guessedLetters;
-    hangmanGame.wrongLetters = wrongLetters;
-
-    const currentWord = hangmanGame.words[hangmanGame.currentWordIndex];
-
-    const uniqueLetters = new Set(currentWord.split(""));
-    const allLettersFound = Array.from(uniqueLetters).every((letter) =>
-      hangmanGame.foundLetters.includes(letter)
+    const allWordsCompleted = letterOrderGame.words.every(
+      (word) => word.status === "completed"
     );
 
-    if (!allLettersFound && forceComplete) {
-      return handleIncompleteGame(req, res, hangmanGame);
+    if (!allWordsCompleted && forceComplete) {
+      return handleIncompleteGame(req, res, letterOrderGame);
     }
 
     if (countAsCompleted) {
-      hangmanGame.status = "completed";
-      await hangmanGame.save();
+      letterOrderGame.status = "completed";
+      await letterOrderGame.save();
 
       const user = await User.findById(userId);
       if (!user)
@@ -184,9 +187,14 @@ export const completeCurrentGame = async (
       if (!user.totalGamesCompletedByType)
         user.totalGamesCompletedByType = new Map<string, number>();
 
-      const gameType = "HangmanGame";
+      const gameType = "LetterOrderGame";
       const currentCount = user.gamesCompletedByType.get(gameType) || 0;
       const totalCount = user.totalGamesCompletedByType.get(gameType) || 0;
+
+      const game = await Game.findById(letterOrderGame.game);
+      if (!game) {
+        return res.status(404).json({ message: "Juego no encontrado" });
+      }
 
       const maxGames = game.totalGames;
 
@@ -199,55 +207,58 @@ export const completeCurrentGame = async (
       if (game.currentGameCount > maxGames) {
         game.completed = true;
         await game.save();
-        await completeAllHangmanGames(game._id.toString());
         return res.status(200).json({
           message: `¡Felicidades! Has completado las ${maxGames} partidas de ${gameType}.`,
           currentGame: game.currentGameCount,
           totalGames: maxGames,
         });
       }
+
       await game.save();
-    }
 
-    const deck = await Deck.findById(hangmanGame.deck).populate("cards");
-    if (!deck) return res.status(404).json({ error: "Mazo no encontrado" });
+      const deck = await Deck.findById(letterOrderGame.deck).populate("cards");
+      if (!deck) return res.status(404).json({ error: "Mazo no encontrado" });
 
-    const words = deck.cards
-      .flatMap((card: any) =>
-        card.frontSide.text.map((textObj: any) => cleanWord(textObj.content))
-      )
-      .filter(
-        (text: string, index, self) =>
-          text.length <= 10 && self.indexOf(text) === index
-      );
+      const words = deck.cards
+        .flatMap((card: any) =>
+          card.frontSide.text.map((textObj: any) => cleanWord(textObj.content))
+        )
+        .filter(
+          (text: string, index, self) =>
+            text.length > 0 && text.length <= 9 && self.indexOf(text) === index
+        );
 
-    if (words.length < 5)
-      return res.status(400).json({
-        error:
-          "El mazo no tiene suficientes palabras válidas para crear un nuevo Juego del Ahorcado",
+      if (words.length < 8)
+        return res.status(400).json({
+          message:
+            "El mazo no tiene suficientes palabras válidas para crear un nuevo Juego de Ordenar Letras",
+        });
+
+      const selectedWords = getRandomWords(words, letterOrderGame.numWords);
+
+      const newLetterOrderGame = new LetterOrderGame({
+        game: letterOrderGame.game,
+        user: letterOrderGame.user,
+        deck: deck._id,
+        words: selectedWords.map((word: string) => ({
+          grid: shuffleArray(word.split("")),
+          word: word,
+          foundLetters: [],
+          status: "inProgress",
+        })),
+        numWords: selectedWords.length,
+        duration: letterOrderGame.duration,
+        status: "inProgress",
       });
 
-    const selectedWords = getRandomWords(words, 5);
-
-    const newHangmanGame = new HangmanGame({
-      game: hangmanGame.game,
-      user: hangmanGame.user,
-      deck: deck._id,
-      words: selectedWords,
-      currentWordIndex: 0,
-      currentWord: selectedWords[0],
-      status: "inProgress",
-      foundLetters: [],
-      wrongLetters: [],
-      duration: hangmanGame.duration,
-    });
-    await newHangmanGame.save();
-    return res.status(201).json({
-      gameId: hangmanGame.game,
-      hangmanGameId: newHangmanGame._id,
-      currentGame: game.currentGameCount,
-      totalGames: game.totalGames,
-    });
+      await newLetterOrderGame.save();
+      return res.status(201).json({
+        gameId: letterOrderGame.game,
+        letterOrderGameId: newLetterOrderGame._id,
+        currentGame: game.currentGameCount,
+        totalGames: maxGames,
+      });
+    }
   } catch (error: any) {
     handleValidationErrors(error, res);
   }
@@ -256,15 +267,14 @@ export const completeCurrentGame = async (
 const handleIncompleteGame = async (
   req: CustomRequest,
   res: Response,
-  hangmanGame: InstanceType<typeof HangmanGame>
+  letterOrderGame: InstanceType<typeof LetterOrderGame>
 ) => {
-  const game = await Game.findById(hangmanGame.game);
+  const game = await Game.findById(letterOrderGame.game);
   if (!game) {
     return res.status(404).json({ message: "Juego no encontrado" });
   }
   if (req.body.forceComplete) {
-    await completeHangmanGame(hangmanGame);
-    await completeAllHangmanGames(game._id.toString());
+    await completeLetterOrderGame(letterOrderGame);
     return res.status(200).json({
       message: "Juego completado forzosamente",
       nextGame: true,
@@ -272,8 +282,7 @@ const handleIncompleteGame = async (
     });
   } else {
     if (game.currentGameCount >= game.totalGames) {
-      await completeHangmanGame(hangmanGame);
-      await completeAllHangmanGames(game._id.toString());
+      await completeLetterOrderGame(letterOrderGame);
       return res.status(200).json({
         message: "Juego completado forzosamente",
         reason: "maxGamesReached",
@@ -282,54 +291,52 @@ const handleIncompleteGame = async (
       return res.status(200).json({
         message: "Juego incompleto",
         nextGame: true,
-        hangmanGameId: hangmanGame._id,
+        letterOrderGameId: letterOrderGame._id,
       });
     }
   }
 };
 
-const completeHangmanGame = async (
-  hangmanGame: InstanceType<typeof HangmanGame>
+const completeLetterOrderGame = async (
+  letterOrderGame: InstanceType<typeof LetterOrderGame>
 ) => {
-  hangmanGame.status = "completed";
-  await hangmanGame.save();
+  letterOrderGame.status = "completed";
+  await letterOrderGame.save();
 };
 
-const completeAllHangmanGames = async (gameId: string) => {
-  await HangmanGame.updateMany(
-    { game: gameId, status: { $ne: "completed" } },
-    { status: "completed" }
-  );
-};
-
-export const deleteHangmanGame = async (req: CustomRequest, res: Response) => {
+export const deleteLetterOrderGame = async (
+  req: CustomRequest,
+  res: Response
+) => {
   try {
-    const { hangmanGameId } = req.params;
+    const { letterOrderGameId } = req.params;
     const userId = req.user?.id;
 
     if (!userId) {
       return res.status(401).json({ error: "Usuario no autenticado" });
     }
 
-    if (!hangmanGameId) {
-      return res
-        .status(400)
-        .json({ error: "El ID del Juego del Ahorcado es obligatorio" });
+    if (!letterOrderGameId) {
+      return res.status(400).json({
+        error: "El ID del Juego de Ordenar Letras es obligatorio",
+      });
     }
 
-    const hangmanGame = await HangmanGame.findByIdAndDelete(hangmanGameId);
-    if (!hangmanGame) {
+    const letterOrderGame = await LetterOrderGame.findByIdAndDelete(
+      letterOrderGameId
+    );
+    if (!letterOrderGame) {
       return res
         .status(404)
-        .json({ error: "Juego del Ahorcado no encontrado" });
+        .json({ error: "Juego de Ordenar Letras no encontrado" });
     }
 
-    await Game.findByIdAndDelete(hangmanGame.game);
+    await Game.findByIdAndDelete(letterOrderGame.game);
 
-    if (hangmanGame.status === "completed") {
+    if (letterOrderGame.status == "completed") {
       const user = await User.findById(userId);
       if (user) {
-        const gameType = "HangmanGame";
+        const gameType = "LetterOrderGame";
         const currentCount = user.gamesCompletedByType.get(gameType) || 0;
 
         if (currentCount > 0) {
